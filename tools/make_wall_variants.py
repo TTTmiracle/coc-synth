@@ -32,7 +32,9 @@ CONNECT_N, CONNECT_E, CONNECT_S, CONNECT_W = 1, 2, 4, 8
 TW = 256           # working tile width; stored art is rendered at this scale
 TH = TW // 2
 SS = 4             # supersample factor for clean diamond edges
-INSET = 0.075      # how far a free face pulls back from the tile edge, in tiles
+INSET = 0.085      # how far a free face pulls back from the tile edge, in tiles
+CAP_OVERHANG = 0.35  # the coping stone pulls back this much less than the body
+CAP_THICK = 0.075  # coping stone thickness, in tile widths
 
 #: Above-ground height per wall level, in tile widths. Clash walls grow with
 #: level but stay well under half a tile -- they are barriers, not towers.
@@ -88,13 +90,23 @@ def extent(mask: int) -> tuple[float, float, float, float]:
 def build(mask: int, height: float, pal: dict) -> tuple[Image.Image, tuple[int, int], float]:
     """Render one connection state; returns (image, anchor, scale)."""
     x0, x1, y0, y1 = extent(mask)
+    # The coping stone on top overhangs the body. That overhang is most of what
+    # gives a Clash wall its silhouette -- without it a run is a plain kerb -- but
+    # it can only overhang on a free face, because a connected face has to stay
+    # flush with the tile edge or the seam with the neighbour opens up.
+    c0 = 0.0 if mask & CONNECT_W else INSET * CAP_OVERHANG
+    c1 = 1.0 if mask & CONNECT_E else 1.0 - INSET * CAP_OVERHANG
+    r0 = 0.0 if mask & CONNECT_N else INSET * CAP_OVERHANG
+    r1 = 1.0 if mask & CONNECT_S else 1.0 - INSET * CAP_OVERHANG
+    body_h = height - CAP_THICK
     tw, th = TW * SS, TH * SS
 
     def proj(px: float, py: float, z: float) -> tuple[float, float]:
         return ((px - py) * tw / 2, (px + py) * th / 2 - z * tw)
 
     corners = [proj(px, py, z)
-               for px in (x0, x1) for py in (y0, y1) for z in (0.0, height)]
+               for px, py in ((c0, r0), (c1, r0), (c0, r1), (c1, r1))
+               for z in (0.0, height)]
     anchor_pt = proj(1.0, 1.0, 0.0)
     pad = SS * 3
     min_x = min(p[0] for p in corners) - pad
@@ -110,36 +122,38 @@ def build(mask: int, height: float, pal: dict) -> tuple[Image.Image, tuple[int, 
     d = ImageDraw.Draw(img)
     outline = shade(pal["left"], 0.45)
 
-    # Down-left face (the y = y1 plane) and down-right face (x = x1). Both face away
-    # from the camera's shoulder, so the down-right one catches more light --
-    # matching how the icons themselves are lit.
-    d.polygon([pt(x0, y1, height), pt(x1, y1, height), pt(x1, y1, 0), pt(x0, y1, 0)],
-              fill=pal["left"] + (255,), outline=outline + (255,), width=SS)
-    d.polygon([pt(x1, y0, height), pt(x1, y1, height), pt(x1, y1, 0), pt(x1, y0, 0)],
-              fill=pal["right"] + (255,), outline=outline + (255,), width=SS)
+    def box(bx0, bx1, by0, by1, z_lo, z_hi, lit):
+        """The two camera-facing sides and the top of one slab.
 
-    # Top slab, then a brighter inset capstone: Clash walls read as a coping
-    # stone sitting on the block rather than one flat-topped solid.
-    top = [pt(x0, y0, height), pt(x1, y0, height), pt(x1, y1, height), pt(x0, y1, height)]
+        Only the y = by1 and x = bx1 faces are ever visible: screen x runs with
+        (px - py), so growing either axis moves toward the viewer. `lit` brightens
+        the coping stone, which catches the sun the body does not.
+        """
+        d.polygon([pt(bx0, by1, z_hi), pt(bx1, by1, z_hi),
+                   pt(bx1, by1, z_lo), pt(bx0, by1, z_lo)],
+                  fill=shade(pal["left"], lit) + (255,), outline=outline + (255,), width=SS)
+        d.polygon([pt(bx1, by0, z_hi), pt(bx1, by1, z_hi),
+                   pt(bx1, by1, z_lo), pt(bx1, by0, z_lo)],
+                  fill=shade(pal["right"], lit) + (255,), outline=outline + (255,), width=SS)
+
+    box(x0, x1, y0, y1, 0.0, body_h, 0.88)                    # body
+    box(c0, c1, r0, r1, body_h, height, 1.0)                  # coping stone
+
+    top = [pt(c0, r0, height), pt(c1, r0, height),
+           pt(c1, r1, height), pt(c0, r1, height)]
     d.polygon(top, fill=pal["top"] + (255,), outline=outline + (255,), width=SS)
-    cap = 0.055
-    inner = [pt(x0 + cap, y0 + cap, height), pt(x1 - cap, y0 + cap, height),
-             pt(x1 - cap, y1 - cap, height), pt(x0 + cap, y1 - cap, height)]
-    if x1 - cap > x0 + cap and y1 - cap > y0 + cap:
-        d.polygon(inner, fill=shade(pal["top"], 1.10) + (255,))
 
-    # Ridge highlight where the top meets each visible side.
-    hi = shade(pal["top"], 1.22) + (255,)
-    d.line([pt(x0, y1, height), pt(x1, y1, height)], fill=hi, width=SS)
-    d.line([pt(x1, y0, height), pt(x1, y1, height)], fill=hi, width=SS)
+    hi = shade(pal["top"], 1.20) + (255,)
+    d.line([pt(c0, r1, height), pt(c1, r1, height)], fill=hi, width=SS)
+    d.line([pt(c1, r0, height), pt(c1, r1, height)], fill=hi, width=SS)
 
     img = img.resize((max(1, w // SS), max(1, h // SS)), Image.Resampling.LANCZOS)
     ax = (anchor_pt[0] - min_x) / SS
     ay = (anchor_pt[1] - min_y) / SS
 
-    box = img.getbbox()
-    img = img.crop(box)
-    anchor = (round(ax - box[0]), round(ay - box[1]))
+    box_ = img.getbbox()
+    img = img.crop(box_)
+    anchor = (round(ax - box_[0]), round(ay - box_[1]))
     # The renderer scales every sprite's width to the footprint diamond, so a
     # segment narrower than a full tile needs that ratio recorded per file.
     return img, anchor, round(img.width / TW, 5)

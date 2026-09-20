@@ -272,10 +272,39 @@ class Placer:
             # dropped from the base entirely, which shows up as a missing defence.
             target = cells if frac < 0.7 else None
             margin = 1 if frac < self.spacing_effort else 0
-            tx, ty = self._candidate(w, h, rng, target, priority)
+            if target is None and frac >= 0.9:
+                # Last resort: anywhere legal at all. The centre-weighted sampler
+                # keeps aiming at the middle of the grid, which by now is solid
+                # base, so a large building can burn every attempt there and be
+                # dropped from the roster while the outskirts sit empty.
+                tx = rng.randint(0, self.tiles - w)
+                ty = rng.randint(0, self.tiles - h)
+            else:
+                tx, ty = self._candidate(w, h, rng, target, priority)
             if self._fits(tx, ty, w, h, occ, margin):
                 return tx, ty
-        return None
+        return self._scan_spot(w, h, occ, rng)
+
+    def _scan_spot(self, w: int, h: int, occ: np.ndarray,
+                   rng: Random) -> tuple[int, int] | None:
+        """Exhaustive fallback: every legal origin at once, pick one at random.
+
+        Random probing is fine while the grid is empty and hopeless once it is not
+        -- a 4x4 Army Camp placed last has to find one of a handful of surviving
+        gaps, and a few hundred dice rolls usually will not. Missing it silently
+        drops a building the roster says exists, so the label and the image
+        disagree with the catalog. A summed-area table answers 'which origins are
+        free' for the whole grid in one pass, which turns that into a certainty.
+        """
+        blocked = (occ != 0).astype(np.int32)
+        table = np.pad(blocked.cumsum(0).cumsum(1), ((1, 0), (1, 0)))
+        # Window sum over every h x w origin via the four corners of the table.
+        sums = (table[h:, w:] - table[:-h, w:] - table[h:, :-w] + table[:-h, :-w])
+        ys, xs = np.nonzero(sums == 0)
+        if len(xs) == 0:
+            return None
+        i = rng.randrange(len(xs))
+        return int(xs[i]), int(ys[i])
 
     def _compartment_candidate(
         self, w: int, h: int, rng: Random, cells: list[tuple[int, int, int, int]]
@@ -295,6 +324,28 @@ class Placer:
         cx0, cy0, cx1, cy1 = rng.choices(cells, weights=room, k=1)[0]
         return (rng.randint(cx0 + 1, cx1 - w), rng.randint(cy0 + 1, cy1 - h))
 
+    def _outside_candidate(
+        self, w: int, h: int, rng: Random, cells: list[tuple[int, int, int, int]]
+    ) -> tuple[int, int] | None:
+        """A spot in the grass just beyond the walls.
+
+        Collectors and camps belong outside, but the centre-weighted sampler aims
+        at the middle of the base, so "outside" has to be asked for explicitly or
+        it never happens -- and a building that keeps aiming into solid base gets
+        dropped from the roster entirely.
+        """
+        x0 = min(c[0] for c in cells)
+        x1 = max(c[2] for c in cells)
+        y0 = min(c[1] for c in cells)
+        y1 = max(c[3] for c in cells)
+        band = 6
+        for _ in range(8):
+            tx = rng.randint(max(0, x0 - band), min(self.tiles - w, x1 + band))
+            ty = rng.randint(max(0, y0 - band), min(self.tiles - h, y1 + band))
+            if tx + w - 1 < x0 or tx > x1 or ty + h - 1 < y0 or ty > y1:
+                return tx, ty
+        return None
+
     def _candidate(self, w: int, h: int, rng: Random,
                    cells: list[tuple[int, int, int, int]] | None = None,
                    priority: int = 1) -> tuple[int, int]:
@@ -302,10 +353,15 @@ class Placer:
         hi_x, hi_y = self.tiles - w, self.tiles - h
         # A handful of buildings always sit outside the walls in a real base --
         # collectors and army camps mostly -- so this is not an unconditional rule.
-        if cells and rng.random() > _OUTSIDE_CHANCE[priority] * self.outside_wall_rate / 0.12:
-            spot = self._compartment_candidate(w, h, rng, cells)
-            if spot is not None:
-                return spot
+        if cells:
+            if rng.random() > _OUTSIDE_CHANCE[priority] * self.outside_wall_rate / 0.12:
+                spot = self._compartment_candidate(w, h, rng, cells)
+                if spot is not None:
+                    return spot
+            else:
+                spot = self._outside_candidate(w, h, rng, cells)
+                if spot is not None:
+                    return spot
         if self.layout_style == "scatter":
             return rng.randint(0, hi_x), rng.randint(0, hi_y)
         if self.layout_style in ("clustered", "compartment"):
@@ -374,15 +430,29 @@ class Placer:
         base somebody actually built.
         """
         budget = self._instance_count(bdef, th, rng)
-        level = self._roll_level(bdef, th, rng)
         placed = 0
 
+        # Walls are the one thing a player upgrades as a block, and they track the
+        # Town Hall closely -- wooden level 1 walls around a maxed TH9 is the sort
+        # of thing anyone who plays would spot immediately. A base part way through
+        # an upgrade has two adjacent levels at once, and the unfinished ones are
+        # the inner runs, because the outer ring gets done first.
+        cap = bdef.per_th[th].max_level
+        if self.level_policy == "maxed":
+            front, behind, share = cap, cap, 0.0
+        else:
+            front = max(1, cap - rng.choices((0, 1, 2), weights=(6, 3, 1))[0])
+            behind = max(1, front - 1)
+            share = rng.uniform(0.0, 0.45) if front > behind else 0.0
+
         skeleton, cells = self._wall_skeleton(budget, demand, rng)
-        for tx, ty in skeleton:
+        finished = int(len(skeleton) * (1.0 - share))
+        for index, (tx, ty) in enumerate(skeleton):
             if placed >= budget:
                 break
             if not self._fits(tx, ty, 1, 1, occ):
                 continue
+            level = front if index < finished else behind
             next_id = self._commit(bdef, level, (tx, ty), occ, out, next_id, rng)
             placed += 1
 
