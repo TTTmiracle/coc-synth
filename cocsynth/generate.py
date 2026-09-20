@@ -26,6 +26,7 @@ from .labels import build_label, write_label
 from .overlay import draw_overlay
 from .placement import Placer
 from .render import Renderer
+from .viewport import content_centre, crop, pick_window
 
 log = logging.getLogger("cocsynth")
 
@@ -81,6 +82,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="omit building types that have no real sprite, instead of "
                         "drawing a placeholder block among real art")
     p.add_argument("--no-shadows", action="store_true", help="disable ground shadows")
+    p.add_argument("--view", type=int, nargs=2, metavar=("W", "H"), default=None,
+                   help="crop each image to a W x H camera view over the base, the way "
+                        "a screenshot frames it, instead of showing the whole grid")
     p.add_argument("--sprites", type=Path, default=None, help="sprite directory override")
     p.add_argument("--config", type=Path, default=None, help="buildings.yaml override")
     p.add_argument("-q", "--quiet", action="store_true")
@@ -151,6 +155,9 @@ def main(argv: list[str] | None = None) -> int:
         renderer = Renderer(catalog, library, tile_w=tile_w, margin=args.margin,
                             min_visibility=args.min_visibility, shadows=not args.no_shadows)
         rendered = renderer.render(placement.placements, rng, pan=pan)
+        if args.view:
+            focus = content_centre(rendered, (rendered.image.width // 2, rendered.image.height // 2))
+            rendered = crop(rendered, pick_window(rendered.image.size, tuple(args.view), focus, rng))
 
         stem = f"th{th}_{i:06d}"
         rendered.image.save(out / "images" / f"{stem}.png")

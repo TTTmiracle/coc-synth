@@ -878,7 +878,8 @@
      35,
      90
     ]
-   }
+   },
+   "scale": 1.45
   },
   "wizard_tower": {
    "anchors": {
