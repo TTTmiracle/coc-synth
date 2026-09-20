@@ -558,11 +558,17 @@ class Placer:
 
     @staticmethod
     def _rect_perimeter(x0: int, y0: int, x1: int, y1: int) -> list[tuple[int, int]]:
-        top = [(x, y0) for x in range(x0, x1 + 1)]
-        bottom = [(x, y1) for x in range(x0, x1 + 1)]
-        left = [(x0, y) for y in range(y0 + 1, y1)]
-        right = [(x1, y) for y in range(y0 + 1, y1)]
-        return top + bottom + left + right
+        """The ring, in walk order rather than edge by edge.
+
+        Order matters because the wall level changes part way along: emitting all
+        of one edge then all of another puts the unfinished level on two opposite
+        sides, which looks deliberate. Walking the ring leaves it as one continuous
+        stretch, which is what a base caught mid-upgrade actually looks like.
+        """
+        return ([(x, y0) for x in range(x0, x1 + 1)]
+                + [(x1, y) for y in range(y0 + 1, y1 + 1)]
+                + [(x, y1) for x in range(x1 - 1, x0 - 1, -1)]
+                + [(x0, y) for y in range(y1 - 1, y0, -1)])
 
     # ---- sanity ----------------------------------------------------------
 
