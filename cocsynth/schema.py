@@ -77,6 +77,7 @@ class BuildingLabel(BaseModel):
     footprint: tuple[int, int] = Field(description="(width, height) in tiles")
 
     direction: int = Field(default=0, ge=0, description="Facing index; 0 for fixed buildings")
+    frame: int = Field(default=0, ge=0, description="Animation frame drawn for this instance")
     heading: str = Field(default="N", description="Compass form of `direction`")
     rotation_deg: int = Field(default=0, ge=0, lt=360)
 

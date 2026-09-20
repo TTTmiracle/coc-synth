@@ -87,7 +87,7 @@ class Renderer:
 
         # Far to near: the painter's algorithm gives correct occlusion.
         for p in sorted(placements, key=lambda q: proj.depth(*q.tile, *q.footprint)):
-            sprite = self.lib.get(self.cat[p.type_id], p.level, p.direction)
+            sprite = self.lib.get(self.cat[p.type_id], p.level, p.direction, p.frame)
             ax, ay = proj.anchor(*p.tile, *p.footprint)
             ox, oy = ax - sprite.anchor[0], ay - sprite.anchor[1]
 

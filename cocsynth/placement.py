@@ -28,6 +28,11 @@ LevelPolicy = str  # "maxed" | "clustered" | "uniform"
 #: Fraction of a building's cap that `jitter` mode may drop to.
 JITTER_FLOOR = 0.70
 
+#: Animation frames are rolled from this range and mapped onto however many frames
+#: actually exist on disk. Decoupling the two means placement stays reproducible and
+#: identical whether or not the art has been added yet.
+FRAME_SPACE = 256
+
 
 @dataclass(frozen=True)
 class Placement:
@@ -40,6 +45,7 @@ class Placement:
     footprint: tuple[int, int]
     direction: int
     directions: int
+    frame: int = 0
 
     @property
     def area(self) -> int:
@@ -208,6 +214,7 @@ class Placer:
                 footprint=bdef.footprint,
                 direction=self._roll_direction(bdef, rng),
                 directions=bdef.directions,
+                frame=rng.randrange(FRAME_SPACE),
             )
         )
         return next_id + 1

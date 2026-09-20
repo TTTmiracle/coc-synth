@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 from . import placeholders
 from .catalog import BuildingDef
@@ -35,7 +35,15 @@ from .catalog import BuildingDef
 log = logging.getLogger(__name__)
 
 DEFAULT_SPRITE_DIR = Path(__file__).resolve().parent.parent / "assets" / "sprites"
-SPRITE_RE = re.compile(r"^(?P<type>.+)_lvl(?P<level>\d+)(?:_dir(?P<dir>\d+))?\.png$", re.I)
+SPRITE_RE = re.compile(
+    r"^(?P<type>.+)_lvl(?P<level>\d+)(?:_dir(?P<dir>\d+))?(?:_f(?P<frame>\d+))?\.png$", re.I
+)
+
+#: Distinct per-instance appearance variants cached per sprite. Buildings in Clash
+#: are animated, so two Cannons in one base should not be pixel-identical. When real
+#: animation frames exist they are used; otherwise each instance gets a subtle
+#: brightness/scale variation so the model cannot memorise one exact pose.
+AUG_BUCKETS = 8
 
 PLACEHOLDER_PREFIX = "placeholder:"
 
@@ -51,6 +59,29 @@ class Sprite:
     @property
     def is_placeholder(self) -> bool:
         return self.name.startswith(PLACEHOLDER_PREFIX)
+
+
+def _vary(img: Image.Image, anchor: tuple[int, int], bucket: int) -> tuple[Image.Image, tuple[int, int]]:
+    """Apply a small per-instance appearance change, keeping the anchor correct.
+
+    This is a stand-in for animation, not a replacement for it: it stops a model
+    memorising one exact pose per building, but real captured frames are better where
+    you have them. Bucket 0 is the untouched sprite.
+    """
+    if bucket == 0:
+        return img, anchor
+    brightness, scale = SpriteLibrary._bucket_params(bucket)
+
+    if scale != 1.0:
+        w, h = max(1, round(img.width * scale)), max(1, round(img.height * scale))
+        ax, ay = anchor
+        anchor = (round(ax * w / img.width), round(ay * h / img.height))
+        img = img.resize((w, h), Image.Resampling.LANCZOS)
+    if brightness != 1.0:
+        rgb = ImageEnhance.Brightness(img.convert("RGB")).enhance(brightness)
+        rgb.putalpha(img.getchannel("A"))
+        img = rgb
+    return img, anchor
 
 
 def trim_alpha(img: Image.Image) -> tuple[Image.Image, tuple[int, int]]:
@@ -81,9 +112,9 @@ class SpriteLibrary:
             return {}
         return json.loads(path.read_text(encoding="utf-8")).get("sprites", {})
 
-    def _build_index(self) -> dict[str, dict[int, dict[int, Path]]]:
-        """type -> level -> direction -> path, from whatever is on disk."""
-        index: dict[str, dict[int, dict[int, Path]]] = {}
+    def _build_index(self) -> dict[str, dict[int, dict[int, dict[int, Path]]]]:
+        """type -> level -> direction -> frame -> path, from whatever is on disk."""
+        index: dict[str, dict[int, dict[int, dict[int, Path]]]] = {}
         if not self.dir.exists():
             return index
         for path in sorted(self.dir.rglob("*.png")):
@@ -93,12 +124,21 @@ class SpriteLibrary:
                 continue
             level = int(m.group("level"))
             direction = int(m.group("dir") or 0)
-            index.setdefault(m.group("type"), {}).setdefault(level, {})[direction] = path
+            frame = int(m.group("frame") or 0)
+            index.setdefault(m.group("type"), {}).setdefault(level, {}).setdefault(direction, {})[frame] = path
         return index
 
     def coverage(self) -> dict[str, int]:
         """Sprite files present per type -- useful for reporting real-art coverage."""
-        return {t: sum(len(d) for d in lv.values()) for t, lv in self._index.items()}
+        return {t: sum(len(f) for d in lv.values() for f in d.values())
+                for t, lv in self._index.items()}
+
+    def frame_counts(self) -> dict[str, int]:
+        """Most animation frames available for any one level/direction, per type."""
+        out: dict[str, int] = {}
+        for t, lv in self._index.items():
+            out[t] = max((len(f) for d in lv.values() for f in d.values()), default=0)
+        return out
 
     def directional_gaps(self, catalog) -> dict[str, list[int]]:
         """Facings that would silently collapse onto another sprite.
@@ -128,14 +168,19 @@ class SpriteLibrary:
 
     # ---- resolution ------------------------------------------------------
 
-    def get(self, bdef: BuildingDef, level: int, direction: int) -> Sprite:
-        key = (bdef.id, level, direction, self.tile_w)
+    def get(self, bdef: BuildingDef, level: int, direction: int, frame: int = 0) -> Sprite:
+        """Resolve a sprite. `frame` selects an animation frame when real ones exist,
+        and always drives a subtle per-instance variation so identical buildings in
+        one base are not pixel-identical copies."""
+        bucket = frame % AUG_BUCKETS
+        key = (bdef.id, level, direction, frame, self.tile_w)
         if key not in self._cache:
-            self._cache[key] = self._resolve(bdef, level, direction)
+            self._cache[key] = self._resolve(bdef, level, direction, frame, bucket)
         return self._cache[key]
 
-    def _resolve(self, bdef: BuildingDef, level: int, direction: int) -> Sprite:
-        found = self._lookup(bdef.id, level, direction)
+    def _resolve(self, bdef: BuildingDef, level: int, direction: int,
+                 frame: int, bucket: int) -> Sprite:
+        found = self._lookup(bdef.id, level, direction, frame)
         if found is None:
             return self._placeholder(bdef, level, direction)
         path, mirrored = found
@@ -143,9 +188,10 @@ class SpriteLibrary:
         anchor = self._anchor_for(path, img, mirrored)
         if mirrored:
             img = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        img, anchor = _vary(img, anchor, bucket)
         return Sprite(img, anchor, path.name + (" (mirrored)" if mirrored else ""))
 
-    def _lookup(self, type_id: str, level: int, direction: int) -> tuple[Path, bool] | None:
+    def _lookup(self, type_id: str, level: int, direction: int, frame: int) -> tuple[Path, bool] | None:
         """Find the best sprite file, returning (path, needs_mirroring)."""
         by_level = self._index.get(type_id)
         if not by_level:
@@ -155,13 +201,24 @@ class SpriteLibrary:
         by_dir = by_level[max(usable)]
 
         if direction in by_dir:
-            return by_dir[direction], False
+            return self._pick_frame(by_dir[direction], frame), False
         mirror = self._mirror_partner(type_id, direction)
         if mirror is not None and mirror in by_dir:
-            return by_dir[mirror], True
+            return self._pick_frame(by_dir[mirror], frame), True
         if 0 in by_dir:
-            return by_dir[0], False
-        return next(iter(by_dir.values())), False
+            return self._pick_frame(by_dir[0], frame), False
+        return self._pick_frame(next(iter(by_dir.values())), frame), False
+
+    @staticmethod
+    def _pick_frame(frames: dict[int, Path], frame: int) -> Path:
+        """Map a rolled frame value onto however many frames actually exist.
+
+        The placer rolls from a fixed range without knowing what art is on disk, so
+        placement stays reproducible and identical whether one frame is present or
+        twenty. One frame means every instance uses it -- no error, just less variety.
+        """
+        order = sorted(frames)
+        return frames[order[frame % len(order)]]
 
     def _mirror_partner(self, type_id: str, direction: int) -> int | None:
         """The direction this one is a horizontal flip of, per the manifest."""
@@ -169,6 +226,13 @@ class SpriteLibrary:
         pairs = entry.get("mirror_of", {})
         value = pairs.get(str(direction), pairs.get(direction))
         return int(value) if value is not None else None
+
+    @staticmethod
+    def _bucket_params(bucket: int) -> tuple[float, float]:
+        """Brightness and scale for one variation bucket."""
+        brightness = 0.94 + (bucket % 5) * 0.03      # 0.94 .. 1.06
+        scale = 0.985 + ((bucket // 5) % 3) * 0.015  # 0.985 .. 1.015
+        return brightness, scale
 
     def _anchor_for(self, path: Path, img: Image.Image, mirrored: bool) -> tuple[int, int]:
         """Anchor point inside the sprite, from the manifest or defaulted.

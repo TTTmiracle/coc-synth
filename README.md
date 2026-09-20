@@ -87,6 +87,8 @@ Plain YOLO boxes have no orientation slot, hence `--yolo-direction-mode`:
 * `visibility` is the fraction not occluded by a nearer building. Instances below
   `--min-visibility` are dropped from the label entirely: asking a model to detect
   something invisible teaches it to hallucinate.
+* `frame` records which animation frame was drawn, so the pose is part of the ground
+  truth rather than hidden variance.
 * `sprite` records what was actually used, so a dataset can be audited for how much
   real art went into it (`placeholder:` prefix means procedural).
 * `seed` + `grid` reproduce any image exactly: `--only <index>` re-renders it

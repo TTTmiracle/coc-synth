@@ -21,6 +21,8 @@ assets/sprites/
 
 * `<type>_lvl<NN>.png` — fixed-orientation buildings.
 * `<type>_lvl<NN>_dir<D>.png` — directional buildings, `D` is `0..directions-1`.
+* `<type>_lvl<NN>_f<FF>.png` — animation frames, `FF` is `00, 01, 02, …`.
+  Combine freely: `air_sweeper_lvl02_dir3_f01.png`.
 * `<type>` must match an id in `config/buildings.yaml` (`cannon`, `air_sweeper`,
   `town_hall`, …). Run `python -c "from cocsynth.catalog import Catalog;
   print(Catalog.load().type_names)"` for the list.
@@ -47,6 +49,24 @@ flipped horizontally. Declaring the four mirror pairs halves the directional art
 ```
 
 Only the Air Sweeper is directional in the TH1–9 catalog (8 facings, 45° apart).
+
+## Animation
+
+Clash buildings are animated, so one static sprite per level means the model only
+ever sees one frozen pose. Add frames with `_f<FF>` and the generator picks one at
+random per instance — two Cannons in the same base then sit at different points in
+their animation.
+
+You do **not** need frames for everything:
+
+* One frame is fine. Nothing errors; you just get less variety.
+* Every instance also gets a small automatic brightness/scale variation regardless,
+  so identical buildings are never pixel-identical copies. That is a stand-in for
+  animation, not a replacement — real frames are better where you have them.
+* Idle state is what matters most. Defenses only animate while firing, which does
+  not happen in a static base layout, so 2–3 idle frames goes a long way.
+
+The frame drawn is recorded in each label as `frame`.
 
 ## Anchors
 

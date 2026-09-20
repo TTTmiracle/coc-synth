@@ -39,6 +39,7 @@ def build_label(
                 tile=p.tile,
                 footprint=p.footprint,
                 direction=p.direction,
+                frame=p.frame,
                 heading=heading_of(p.direction, p.directions),
                 rotation_deg=rotation_deg_of(p.direction, p.directions),
                 bbox_px=inst.bbox_px,
