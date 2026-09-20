@@ -64,8 +64,22 @@ PLACEHOLDER_PREFIX = "placeholder:"
 
 
 #: Ground shadows: vertical squash, opacity, blur radius as a fraction of tile width.
-SHADOW_SQUASH = 0.42
-SHADOW_ALPHA = 132
+#: How much of its footprint diamond a building's art actually spans.
+#:
+#: Not 1.0. Matching an icon's width to the full diamond assumes the art is the
+#: building's ground extent, and it is not -- an Army Camp icon is just the grill,
+#: while the 4x4 footprint is mostly the ground the troops stand on. Scale-swept
+#: colour matching against real screenshots puts the Town Hall at 0.61 of its
+#: diamond, the Cannon at 0.61, the Gold Storage at 0.72 and the Elixir Storage at
+#: 0.77. Correlations were weak (0.23-0.35), so this is one global figure rather
+#: than a per-type table pretending to a precision the measurement does not have.
+#: `scale` or `scales` in the manifest overrides it where a type is known better.
+ART_FILL = 0.68
+
+SHADOW_SQUASH = 0.30
+#: Only the bottom of a sprite casts the contact shadow.
+SHADOW_BASE_BAND = 0.42
+SHADOW_ALPHA = 112
 SHADOW_BLUR = 0.055
 
 
@@ -94,6 +108,12 @@ def make_shadow(img: Image.Image, tile_w: int) -> Image.Image | None:
     every bounding box would grow to include its own shadow.
     """
     alpha = img.getchannel("A")
+    # Only the base of the building casts the contact shadow. Squashing the whole
+    # silhouette instead gives a tall tower a shadow the size of its roof, sitting
+    # clear of the tile it stands on -- which reads as the building hovering above
+    # its own shadow rather than standing on the ground.
+    band = max(1, int(alpha.height * SHADOW_BASE_BAND))
+    alpha = alpha.crop((0, alpha.height - band, alpha.width, alpha.height))
     h = max(1, int(alpha.height * SHADOW_SQUASH))
     flat = alpha.resize((alpha.width, h), Image.Resampling.BILINEAR)
     flat = flat.point(lambda v: min(SHADOW_ALPHA, v))
@@ -288,8 +308,10 @@ class SpriteLibrary:
 
         target = (w + h) * self.tile_w / 2
         per_file = entry.get("scales", {})
-        target *= float(per_file.get(filename, entry.get("scale", 1.0))
-                        if filename else entry.get("scale", 1.0))
+        if filename and filename in per_file:
+            target *= float(per_file[filename])
+        else:
+            target *= float(entry.get("scale", ART_FILL))
         if img.width == 0 or abs(img.width - target) < 1:
             return img, anchor
 

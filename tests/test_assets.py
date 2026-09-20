@@ -88,7 +88,10 @@ def test_anchor_defaults_to_bottom_centre(sprite_dir, catalog):
 def test_manifest_anchor_overrides_the_default(sprite_dir, catalog):
     import json
     (sprite_dir / "manifest.json").write_text(json.dumps(
-        {"sprites": {"cannon": {"anchors": {"cannon_lvl07.png": [5, 9]}}}}))
+        # scale 1.0 opts out of the global art-fill resize, so this asserts the
+        # anchor override itself rather than how an anchor rides a rescale.
+        {"sprites": {"cannon": {"scale": 1.0,
+                                "anchors": {"cannon_lvl07.png": [5, 9]}}}}))
     assert SpriteLibrary(sprite_dir, tile_w=32).get(catalog["cannon"], 7, 0).anchor == (5, 9)
 
 

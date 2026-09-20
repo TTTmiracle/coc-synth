@@ -32,8 +32,12 @@ ALPHA_CUTOFF = 8
 
 #: Shadow placement, as fractions of tile width. The game lights from the upper
 #: left, so shadows fall slightly down and to the right of what casts them.
-SHADOW_DX = 0.10
-SHADOW_LIFT = 0.16
+SHADOW_DX = 0.045
+#: Ground colours, sampled from an empty home village rather than chosen.
+GROUND_DARK = (119, 176, 46)
+GROUND_LIGHT = (150, 207, 71)
+GROUND_OUTSIDE = (91, 115, 38)
+SHADOW_LIFT = 0.02
 
 
 @dataclass(frozen=True)
@@ -137,62 +141,42 @@ class Renderer:
         w, h = size
         gen = np.random.default_rng(rng.getrandbits(32))
 
-        # --- broad patchiness -------------------------------------------------
-        def octave(cells: int) -> np.ndarray:
-            rows = max(2, int(cells * h / max(w, 1)))
-            coarse = gen.random((rows, cells), dtype=np.float32)
-            up = Image.fromarray((coarse * 255).astype(np.uint8), mode="L")
-            return np.asarray(up.resize((w, h), Image.Resampling.BICUBIC),
-                              dtype=np.float32) / 255.0
-
-        field = np.zeros((h, w), dtype=np.float32)
-        weight = 0.0
-        for cells, amplitude in ((9, 0.6), (23, 0.9), (57, 0.55), (131, 0.3)):
-            field += amplitude * octave(cells)
-            weight += amplitude
-        field /= weight
-
-        # --- the grid, read through the grass ---------------------------------
+        # --- the ground is tiles ----------------------------------------------
+        # Measured off an empty home village: the buildable area is a checkerboard
+        # of discrete tile diamonds, light (150, 207, 71) against dark
+        # (119, 176, 46) -- a 31-level step, plainly visible, not a hint. Grass
+        # noise with a lattice suggested on top of it is not the same thing and
+        # never will be; the game draws tiles, so this draws tiles.
         ys, xs = np.mgrid[0:h, 0:w]
         tx, ty = proj.px_to_tile(xs.astype(np.float32), ys.astype(np.float32))
         ix, iy = np.floor(tx).astype(np.int64), np.floor(ty).astype(np.int64)
-        # Cheap spatial hash: a fixed per-tile value, stable across the image.
-        # Quantising it to a few steps is deliberate -- the lattice should read as
-        # discrete tiles, which is what it looks like in game, not as smooth drift.
+
+        dark = np.array(GROUND_DARK, dtype=np.float32)
+        light = np.array(GROUND_LIGHT, dtype=np.float32)
+        parity = ((ix + iy) & 1).astype(np.float32)[:, :, None]
+        ground = dark * (1.0 - parity) + light * parity
+
+        # Per-tile drift, so the board is not two flat colours, and pixel grain at
+        # the amplitude measured inside a single real tile (about 10 per channel).
         tile_noise = (((ix * 73856093) ^ (iy * 19349663)) & 0x3FF) / 1023.0
-        field += (np.floor(tile_noise.astype(np.float32) * 4) / 3.0 - 0.5) * 0.075
-
-        # Blade-scale grain. Added after the upscales so it stays pixel-crisp
-        # instead of being smeared into the soft look of resized noise.
-        field += (gen.random((h, w), dtype=np.float32) - 0.5) * 0.06
-        field = np.clip(field, 0.0, 1.0)
-
-        dark = np.array((58, 101, 41), dtype=np.float32)
-        light = np.array((129, 172, 80), dtype=np.float32)
-        t = np.clip((field - 0.34) * 2.1, 0.0, 1.0)[:, :, None]
-        ground = dark * (1.0 - t) + light * t
-
-        # --- worn patches -----------------------------------------------------
-        # Thresholded rather than blended: smooth noise alone gives soft clouds,
-        # and clouds are the giveaway. Cutting a mid-frequency field at a level
-        # produces irregular regions with an actual edge, which is how the dry and
-        # trampled ground in a real base is drawn.
-        patch = octave(31)
-        patch = np.clip((patch - 0.60) * 14.0, 0.0, 1.0)[:, :, None]
-        worn = np.array((112, 135, 62), dtype=np.float32)
-        ground = ground * (1.0 - patch * 0.55) + worn * (patch * 0.55)
+        ground += ((tile_noise.astype(np.float32) - 0.5) * 9.0)[:, :, None]
+        ground += (gen.random((h, w, 1), dtype=np.float32) - 0.5) * 17.0
+        ground += (gen.random((h, w, 3), dtype=np.float32) - 0.5) * 7.0
 
         # --- edge of the buildable area ---------------------------------------
+        # The checkerboard is what marks out where you may build, so it has to stop
+        # at the grid edge rather than run on under a darkening. Outside is plain
+        # darker grass, which is how the boundary reads in game: not a drawn line,
+        # a change of ground.
         n = float(proj.tiles)
-        inside = (tx >= 0) & (tx <= n) & (ty >= 0) & (ty <= n)
-        # Distance to the nearest grid edge, in tiles, negative outside.
         edge = np.minimum.reduce([tx, n - tx, ty, n - ty]).astype(np.float32)
-        if (~inside).any():
-            outer = np.array((46, 80, 39), dtype=np.float32)
-            # Ramp over a couple of tiles either side of the boundary: in game the
-            # ground beyond the base darkens gradually, it is not a drawn border.
-            k = np.clip((0.6 - edge) / 2.6, 0.0, 1.0)[:, :, None]
-            ground = ground * (1.0 - k) + (ground * 0.62 + outer * 0.38) * k
+        outer = np.array(GROUND_OUTSIDE, dtype=np.float32)
+        k = np.clip((0.35 - edge) / 0.7, 0.0, 1.0)[:, :, None]
+        ground = ground * (1.0 - k) + outer * k
+        # Beyond the edge it keeps darkening a little with distance, so the eye
+        # reads depth rather than a flat mat.
+        far = np.clip((-edge - 1.0) / 9.0, 0.0, 1.0)[:, :, None]
+        ground *= (1.0 - far * 0.22)
 
         img = Image.fromarray(np.clip(ground, 0, 255).astype(np.uint8), mode="RGB")
         self._scatter_tufts(img, proj, rng)
@@ -212,9 +196,9 @@ class Renderer:
         for _ in range(clumps):
             cx, cy = rng.randrange(w), rng.randrange(h)
             if rng.random() < 0.6:
-                c = (48, 88, 34, rng.randint(55, 100))
+                c = (96, 150, 34, rng.randint(45, 85))
             else:
-                c = (152, 192, 102, rng.randint(40, 80))
+                c = (170, 222, 92, rng.randint(35, 70))
             # A tuft, not a speck: scattered single strokes read as sensor noise,
             # while three or four leaning off one spot read as a plant.
             for _ in range(rng.randint(3, 5)):
