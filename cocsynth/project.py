@@ -1,7 +1,7 @@
 """Isometric tile <-> pixel projection.
 
-Standard 2:1 isometric: a tile is a diamond twice as wide as it is tall. Tile (0, 0)
-sits at the top of the screen and the grid fans out downwards, so screen y grows with
+A tile is a diamond `TILE_ASPECT` times as tall as it is wide. Tile (0, 0) sits at
+the top of the screen and the grid fans out downwards, so screen y grows with
 (tx + ty) -- which is also the painter's-algorithm depth key.
 
     sx = origin_x + (tx - ty) * tile_w / 2
@@ -15,6 +15,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+#: Tile height as a fraction of tile width.
+#:
+#: Not the textbook 2:1. Measured off an empty 44x44 home village: the tile lattice
+#: has a horizontal period of 32.90px and a vertical period of 24.74px, a ratio of
+#: 1.3299, and the diamond's own edges fit the same slope. Both axes then report the
+#: same grid size (42.7 tiles across, 43.4 down), which is the check that the ratio
+#: rather than the tile count is what was measured. 4:3, to within 0.25%.
+#:
+#: The lattice period is identical at the top, middle and bottom of the diamond, so
+#: the camera is orthographic -- there is no perspective foreshortening to model.
+#:
+#: Rendering at 2:1 squashes every image vertically by a third against the real
+#: thing. It reads as a subtly wrong camera angle rather than as an obvious bug,
+#: which is exactly how it survived this long.
+TILE_ASPECT = 0.75
+
 
 @dataclass(frozen=True)
 class Projection:
@@ -26,8 +42,8 @@ class Projection:
 
     @property
     def tile_h(self) -> int:
-        """2:1 isometric -- height is always half the width."""
-        return self.tile_w // 2
+        """Diamond height for this tile width, at the game's measured aspect."""
+        return round(self.tile_w * TILE_ASPECT)
 
     def tile_to_px(self, tx: float, ty: float) -> tuple[int, int]:
         """Project a tile *corner* (grid vertex) to pixels.

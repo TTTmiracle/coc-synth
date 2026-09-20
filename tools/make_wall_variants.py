@@ -30,7 +30,7 @@ MANIFEST = ROOT / "assets" / "sprites" / "manifest.json"
 CONNECT_N, CONNECT_E, CONNECT_S, CONNECT_W = 1, 2, 4, 8
 
 TW = 256           # working tile width; stored art is rendered at this scale
-TH = TW // 2
+TH = round(TW * 0.75)   # the game's measured tile aspect, see project.TILE_ASPECT
 SS = 4             # supersample factor for clean diamond edges
 INSET = 0.085      # how far a free face pulls back from the tile edge, in tiles
 CAP_OVERHANG = 0.35  # the coping stone pulls back this much less than the body

@@ -4,12 +4,16 @@ import pytest
 from cocsynth.project import Projection
 
 
-def test_tile_is_a_two_to_one_diamond():
+def test_tile_matches_the_measured_game_aspect():
+    """Not 2:1. Measured off an empty home village, the lattice is 32.90px across
+    and 24.74px down -- 4:3. Rendering at 2:1 squashes the whole image vertically
+    by a third, which reads as a wrong camera rather than as a bug."""
     p = Projection(44, 32, (0, 0))
-    assert p.tile_h == 16
+    assert p.tile_h == 24
     poly = p.footprint_polygon(0, 0, 1, 1)
     assert poly[1][0] - poly[3][0] == 32  # width, west to east
-    assert poly[2][1] - poly[0][1] == 16  # height, north to south
+    assert poly[2][1] - poly[0][1] == 24  # height, north to south
+    assert abs((poly[1][0] - poly[3][0]) / (poly[2][1] - poly[0][1]) - 4 / 3) < 0.01
 
 
 def test_polygon_corners_are_in_screen_order():
@@ -61,4 +65,4 @@ def test_grid_bounds_span_the_full_diamond():
     p, _ = Projection.centred(44, 32, margin=0)
     x0, y0, x1, y1 = p.grid_bounds_px()
     assert x1 - x0 == 44 * 32          # widest point, west to east
-    assert y1 - y0 == 44 * 16          # tallest point, north to south
+    assert y1 - y0 == 44 * 24          # tallest point, north to south

@@ -30,7 +30,8 @@ from .viewport import content_centre, crop, pick_window
 
 log = logging.getLogger("cocsynth")
 
-#: Scale jitter picks from these tile widths. All even so tile_h = tile_w/2 is exact.
+#: Scale jitter picks from these tile widths. All multiples of 4, so tile_h at the
+#: game's 3/4 aspect lands on a whole pixel.
 SCALE_CHOICES = (28, 32, 36, 40)
 
 

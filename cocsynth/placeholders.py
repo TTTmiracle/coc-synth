@@ -18,6 +18,7 @@ import hashlib
 from PIL import Image, ImageDraw
 
 from .schema import heading_vector
+from .project import TILE_ASPECT
 
 #: Body height as a multiple of tile_w, by category. Towers stand tall so that
 #: occlusion actually happens and the visibility field gets exercised.
@@ -74,7 +75,7 @@ def make_sprite(
     placed on the footprint diamond's bottom (south) vertex.
     """
     w, h = footprint
-    tile_h = tile_w // 2
+    tile_h = round(tile_w * TILE_ASPECT)
     body = body_height_px(type_id, category, tile_w)
 
     # Footprint diamond in sprite-local coordinates, shifted so x starts at 0.
@@ -151,7 +152,7 @@ def _draw_facing_arrow(
 
     # Project the grid vector into screen space and normalise its length.
     sx = (gx - gy) * tile_w / 2
-    sy = (gx + gy) * (tile_w // 2) / 2
+    sy = (gx + gy) * round(tile_w * TILE_ASPECT) / 2
     mag = (sx * sx + sy * sy) ** 0.5 or 1.0
     reach = min(re[0] - cx, cy - rn[1] + (rs[1] - cy)) * 0.72
     ux, uy = sx / mag * reach, sy / mag * reach
