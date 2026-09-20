@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from random import Random
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from .assets import SpriteLibrary
 from .catalog import Catalog
@@ -123,34 +123,87 @@ class Renderer:
     # ---- internals -------------------------------------------------------
 
     def _terrain(self, size: tuple[int, int], proj: Projection, rng: Random) -> Image.Image:
-        """Grass, built from several octaves of noise.
+        """The ground the base stands on.
 
-        A flat colour is something a model keys off instead of learning buildings,
-        and a single noise octave still reads as static. Layering a coarse octave
-        (broad lighter and darker patches) under a fine one (blade-scale texture)
-        gives ground that varies at both scales, which is what real terrain does.
+        Three things separate real Clash ground from a green rectangle, and all
+        three are here. Broad noise gives patches of lighter and darker grass.
+        The grid itself is faintly visible -- every tile carries a small constant
+        brightness offset, so the diamond lattice reads through the grass the way
+        it does in game. And the buildable area ends somewhere: outside it the
+        ground drops to a darker, cooler green behind a shadowed lip, which is
+        the single strongest cue that this is a base sitting in a landscape
+        rather than a texture filling a frame.
         """
         w, h = size
         gen = np.random.default_rng(rng.getrandbits(32))
 
+        # --- broad patchiness -------------------------------------------------
         field = np.zeros((h, w), dtype=np.float32)
         weight = 0.0
-        for cells, amplitude in ((6, 1.0), (24, 0.5), (96, 0.26), (384, 0.13)):
-            coarse = gen.random((max(2, h * cells // max(w, h)), max(2, cells)), dtype=np.float32)
+        for cells, amplitude in ((7, 0.75), (19, 0.85), (47, 0.5), (115, 0.28)):
+            rows = max(2, int(cells * h / max(w, 1)))
+            coarse = gen.random((max(2, rows), cells), dtype=np.float32)
             up = Image.fromarray((coarse * 255).astype(np.uint8), mode="L")
             field += amplitude * np.asarray(
-                up.resize((w, h), Image.Resampling.BICUBIC), dtype=np.float32
-            )
+                up.resize((w, h), Image.Resampling.BICUBIC), dtype=np.float32) / 255.0
             weight += amplitude
-        field = field / (weight * 255.0)
+        field /= weight
 
-        # Blend between a shaded and a sunlit green rather than tinting one colour,
-        # so the darker patches shift hue slightly the way grass does.
-        dark = np.array((62, 104, 44), dtype=np.float32)
-        light = np.array((124, 166, 78), dtype=np.float32)
-        t = np.clip((field - 0.35) * 2.0, 0.0, 1.0)[:, :, None]
-        ground = (dark * (1.0 - t) + light * t).astype(np.uint8)
-        return Image.fromarray(ground, mode="RGB").convert("RGBA")
+        # --- the grid, read through the grass ---------------------------------
+        ys, xs = np.mgrid[0:h, 0:w]
+        tx, ty = proj.px_to_tile(xs.astype(np.float32), ys.astype(np.float32))
+        ix, iy = np.floor(tx).astype(np.int64), np.floor(ty).astype(np.int64)
+        # Cheap spatial hash: a fixed per-tile value, stable across the image.
+        tile_noise = (((ix * 73856093) ^ (iy * 19349663)) & 0x3FF) / 1023.0
+        field += (tile_noise.astype(np.float32) - 0.5) * 0.05
+
+        # Blade-scale grain. Added after the upscales so it stays pixel-crisp
+        # instead of being smeared into the soft look of resized noise.
+        field += (gen.random((h, w), dtype=np.float32) - 0.5) * 0.07
+        field = np.clip(field, 0.0, 1.0)
+
+        dark = np.array((58, 101, 41), dtype=np.float32)
+        light = np.array((129, 172, 80), dtype=np.float32)
+        t = np.clip((field - 0.34) * 2.1, 0.0, 1.0)[:, :, None]
+        ground = dark * (1.0 - t) + light * t
+
+        # --- edge of the buildable area ---------------------------------------
+        n = float(proj.tiles)
+        inside = (tx >= 0) & (tx <= n) & (ty >= 0) & (ty <= n)
+        # Distance to the nearest grid edge, in tiles, negative outside.
+        edge = np.minimum.reduce([tx, n - tx, ty, n - ty]).astype(np.float32)
+        if (~inside).any():
+            outer = np.array((46, 80, 39), dtype=np.float32)
+            # Ramp over a couple of tiles either side of the boundary: in game the
+            # ground beyond the base darkens gradually, it is not a drawn border.
+            k = np.clip((0.6 - edge) / 2.6, 0.0, 1.0)[:, :, None]
+            ground = ground * (1.0 - k) + (ground * 0.62 + outer * 0.38) * k
+
+        img = Image.fromarray(np.clip(ground, 0, 255).astype(np.uint8), mode="RGB")
+        self._scatter_tufts(img, proj, rng)
+        return img.convert("RGBA")
+
+    def _scatter_tufts(self, img: Image.Image, proj: Projection, rng: Random) -> None:
+        """Flick short blade marks over the grass.
+
+        Noise alone varies colour but has no shape to it. A sparse layer of tiny
+        two-stroke tufts gives the ground something with structure at the scale a
+        detector actually looks at, and keeps flat regions from reading as fill.
+        """
+        d = ImageDraw.Draw(img, "RGBA")
+        w, h = img.size
+        count = max(1, (w * h) // max(1, self.tile_w * 3))
+        blade = max(2, round(self.tile_w * 0.07))
+        for _ in range(count):
+            x, y = rng.randrange(w), rng.randrange(h)
+            if rng.random() < 0.55:
+                c = (50, 90, 35, rng.randint(45, 90))
+            else:
+                c = (150, 190, 100, rng.randint(35, 70))
+            for _ in range(rng.randint(1, 2)):
+                lean = rng.uniform(-0.55, 0.55)
+                d.line([(x, y), (x + lean * blade, y - blade * rng.uniform(0.5, 1.0))],
+                       fill=c, width=1)
 
     @staticmethod
     def _stamp(

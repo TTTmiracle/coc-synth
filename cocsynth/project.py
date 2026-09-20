@@ -41,6 +41,18 @@ class Projection:
             int(round(oy + (tx + ty) * self.tile_h / 2)),
         )
 
+    def px_to_tile(self, sx: float, sy: float) -> tuple[float, float]:
+        """Inverse of `tile_to_px`: which tile coordinate a pixel falls on.
+
+        Inverting the two projection equations gives tx = (u + v) / 2 and
+        ty = (v - u) / 2, for u = (sx - ox) / (tile_w / 2) and
+        v = (sy - oy) / (tile_h / 2). Used to paint ground that follows the grid.
+        """
+        ox, oy = self.origin
+        u = (sx - ox) / (self.tile_w / 2)
+        v = (sy - oy) / (self.tile_h / 2)
+        return ((u + v) / 2, (v - u) / 2)
+
     def footprint_polygon(self, tx: int, ty: int, w: int, h: int) -> list[tuple[int, int]]:
         """The four pixel corners of a w x h footprint at tile (tx, ty).
 

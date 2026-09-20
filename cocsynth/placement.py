@@ -84,6 +84,8 @@ class Placer:
         level_policy: LevelPolicy = "clustered",
         max_attempts: int = 160,
         max_shortfall: float = 0.10,
+        outside_wall_rate: float = 0.12,
+        spacing_effort: float = 0.55,
     ):
         self.cat = catalog
         self.layout_style = layout_style
@@ -91,6 +93,8 @@ class Placer:
         self.level_policy = level_policy
         self.max_attempts = max_attempts
         self.max_shortfall = max_shortfall
+        self.outside_wall_rate = outside_wall_rate
+        self.spacing_effort = spacing_effort
         self.tiles = catalog.grid_tiles
 
     # ---- public ----------------------------------------------------------
@@ -105,25 +109,36 @@ class Placer:
         roster = [b for b in self.cat.roster(th) if b.category != "wall"]
         walls = [b for b in self.cat.roster(th) if b.category == "wall"]
 
-        # Town Hall first: it anchors the base, as it does in a real layout.
         town_hall = next((b for b in roster if b.id == "town_hall"), None)
         if town_hall is not None:
             roster.remove(town_hall)
-            next_id = self._place_town_hall(town_hall, th, occ, placements, next_id, rng)
 
-        # Then everything else, biggest footprint first so large pieces get space
-        # before it fragments. Ties are shuffled for variety.
+        # Biggest footprint first so large pieces get space before it fragments.
+        # Ties are shuffled for variety.
         work = self._work_list(roster, th, rng)
         work.sort(key=lambda item: -item[0].area)
+
+        # Walls go down before the buildings do. A player lays out compartments and
+        # then fills them; walling in whatever happens to be left at the end gives
+        # one outer ring and no interior, because the interior is already occupied.
+        # Knowing the roster's total area up front is what lets the compartments be
+        # sized to hold it.
+        demand = sum(b.area for b, _ in work) + (town_hall.area if town_hall else 0)
+        cells: list[tuple[int, int, int, int]] = []
+        for bdef in walls:
+            next_id, cells = self._place_walls(
+                bdef, th, occ, placements, next_id, rng, shortfall, demand)
+
+        # Town Hall next: it anchors the base, as it does in a real layout.
+        if town_hall is not None:
+            next_id = self._place_town_hall(town_hall, th, occ, placements, next_id, rng)
+
         for bdef, level in work:
-            pos = self._find_spot(bdef.footprint, occ, rng)
+            pos = self._find_spot(bdef.footprint, occ, rng, cells)
             if pos is None:
                 shortfall[bdef.id] = shortfall.get(bdef.id, 0) + 1
                 continue
             next_id = self._commit(bdef, level, pos, occ, placements, next_id, rng)
-
-        for bdef in walls:
-            next_id = self._place_walls(bdef, th, occ, placements, next_id, rng, shortfall)
 
         placements = self._link_walls(placements)
         self._check_shortfall(th, placements, shortfall)
@@ -195,23 +210,65 @@ class Placer:
 
     # ---- position search -------------------------------------------------
 
-    def _fits(self, tx: int, ty: int, w: int, h: int, occ: np.ndarray) -> bool:
+    def _fits(self, tx: int, ty: int, w: int, h: int, occ: np.ndarray,
+              margin: int = 0) -> bool:
+        """Is this footprint free? `margin` also requires a clear ring around it."""
         if tx < 0 or ty < 0 or tx + w > self.tiles or ty + h > self.tiles:
             return False
+        if margin:
+            mx0, my0 = max(0, tx - margin), max(0, ty - margin)
+            mx1, my1 = min(self.tiles, tx + w + margin), min(self.tiles, ty + h + margin)
+            return not occ[my0:my1, mx0:mx1].any()
         return not occ[ty : ty + h, tx : tx + w].any()
 
-    def _find_spot(self, footprint: tuple[int, int], occ: np.ndarray, rng: Random) -> tuple[int, int] | None:
-        """Random legal origin for a footprint, or None after max_attempts."""
+    def _find_spot(self, footprint: tuple[int, int], occ: np.ndarray, rng: Random,
+                   cells: list[tuple[int, int, int, int]] | None = None) -> tuple[int, int] | None:
+        """Random legal origin for a footprint, or None after max_attempts.
+
+        The first pass insists on a clear tile around the building. Players leave
+        those gaps deliberately -- they break up Wall Breaker chains and leave room
+        for traps -- and packing every building flush against its neighbour instead
+        means each one buries the sprite behind it. Once the easy room is gone the
+        pass is dropped and buildings are allowed to touch, which is also what a
+        crowded corner of a real base looks like.
+        """
         w, h = footprint
-        for _ in range(self.max_attempts):
-            tx, ty = self._candidate(w, h, rng)
-            if self._fits(tx, ty, w, h, occ):
+        spaced = int(self.max_attempts * self.spacing_effort)
+        for attempt in range(self.max_attempts):
+            tx, ty = self._candidate(w, h, rng, cells)
+            margin = 1 if attempt < spaced else 0
+            if self._fits(tx, ty, w, h, occ, margin):
                 return tx, ty
         return None
 
-    def _candidate(self, w: int, h: int, rng: Random) -> tuple[int, int]:
+    def _compartment_candidate(
+        self, w: int, h: int, rng: Random, cells: list[tuple[int, int, int, int]]
+    ) -> tuple[int, int] | None:
+        """Drop the building inside one of the walled compartments.
+
+        Sampling the grid with a centre bias instead piles everything into the
+        middle and leaves outer compartments as empty boxes, which is the one thing
+        no real base has -- players fill a compartment before opening another.
+        Choosing the compartment first, weighted by how much room it has, spreads
+        the roster the way a player would.
+        """
+        room = [max(0, (c[2] - c[0] - 1) - w + 1) * max(0, (c[3] - c[1] - 1) - h + 1)
+                for c in cells]
+        if not any(room):
+            return None
+        cx0, cy0, cx1, cy1 = rng.choices(cells, weights=room, k=1)[0]
+        return (rng.randint(cx0 + 1, cx1 - w), rng.randint(cy0 + 1, cy1 - h))
+
+    def _candidate(self, w: int, h: int, rng: Random,
+                   cells: list[tuple[int, int, int, int]] | None = None) -> tuple[int, int]:
         """Sample a candidate origin according to the layout style."""
         hi_x, hi_y = self.tiles - w, self.tiles - h
+        # A handful of buildings always sit outside the walls in a real base --
+        # collectors and army camps mostly -- so this is not an unconditional rule.
+        if cells and rng.random() > self.outside_wall_rate:
+            spot = self._compartment_candidate(w, h, rng, cells)
+            if spot is not None:
+                return spot
         if self.layout_style == "scatter":
             return rng.randint(0, hi_x), rng.randint(0, hi_y)
         if self.layout_style in ("clustered", "compartment"):
@@ -270,19 +327,21 @@ class Placer:
 
     def _place_walls(
         self, bdef: BuildingDef, th: int, occ: np.ndarray, out: list[Placement],
-        next_id: int, rng: Random, shortfall: dict[str, int],
-    ) -> int:
-        """Spend the wall budget on compartment perimeters rather than scattering.
+        next_id: int, rng: Random, shortfall: dict[str, int], demand: int,
+    ) -> tuple[int, list[tuple[int, int, int, int]]]:
+        """Lay the wall skeleton: an outer ring cut into compartments.
 
-        Scattered single tiles do not read as a base. This traces the ring around
-        what has already been placed, then internal dividers, consuming free tiles
-        until the budget runs out.
+        `demand` is the total tile area the roster needs, which decides how big the
+        ring has to be. Undersize it and the buildings spill outside the walls;
+        oversize it and the base is a ring around empty grass. Neither looks like a
+        base somebody actually built.
         """
         budget = self._instance_count(bdef, th, rng)
         level = self._roll_level(bdef, th, rng)
         placed = 0
 
-        for tx, ty in self._wall_tiles(occ, rng):
+        skeleton, cells = self._wall_skeleton(budget, demand, rng)
+        for tx, ty in skeleton:
             if placed >= budget:
                 break
             if not self._fits(tx, ty, 1, 1, occ):
@@ -292,40 +351,81 @@ class Placer:
 
         if placed < budget:
             shortfall[bdef.id] = budget - placed
-        return next_id
+        return next_id, cells
 
-    def _wall_tiles(self, occ: np.ndarray, rng: Random) -> list[tuple[int, int]]:
-        """Candidate wall tiles: outer ring first, then internal dividers."""
-        ys, xs = np.nonzero(occ)
-        if len(xs) == 0:
-            return []
-        pad = 1
-        x0 = max(0, int(xs.min()) - pad)
-        x1 = min(self.tiles - 1, int(xs.max()) + pad)
-        y0 = max(0, int(ys.min()) - pad)
-        y1 = min(self.tiles - 1, int(ys.max()) + pad)
+    def _wall_skeleton(
+        self, budget: int, demand: int, rng: Random
+    ) -> tuple[list[tuple[int, int]], list[tuple[int, int, int, int]]]:
+        """Compartment walls, as a list of tiles in the order they should be spent.
+
+        The ring comes first so a partial budget still closes it, then dividers,
+        largest compartment first. Splitting the biggest cell each time is what
+        produces the mix of sizes a real base has -- a roomy Town Hall box next to
+        a run of small single-building cells -- rather than a uniform lattice.
+        """
+        if budget < 12:
+            return [], []
+
+        # Interior big enough to hold the roster at a realistic packing density,
+        # but never bigger than the budget can enclose.
+        need = int(math.ceil(math.sqrt(demand / 0.55))) + 2
+        afford = (budget + 4) // 4
+        side = max(6, min(need, afford, self.tiles - 2))
+
+        slack = self.tiles - side
+        x0 = max(0, slack // 2 + rng.randint(-slack // 4, slack // 4) if slack >= 4 else 0)
+        y0 = max(0, slack // 2 + rng.randint(-slack // 4, slack // 4) if slack >= 4 else 0)
+        x0 = min(x0, self.tiles - side - 1)
+        y0 = min(y0, self.tiles - side - 1)
+        x1, y1 = x0 + side - 1, y0 + side - 1
 
         tiles = self._rect_perimeter(x0, y0, x1, y1)
+        seen = set(tiles)
+        remaining = budget - len(tiles)
 
-        # Internal dividers split the interior into compartments.
-        n_div = rng.randint(2, 4)
-        for _ in range(n_div):
-            if rng.random() < 0.5 and x1 - x0 > 6:
-                x = rng.randint(x0 + 3, x1 - 3)
-                tiles += [(x, y) for y in range(y0, y1 + 1)]
-            elif y1 - y0 > 6:
-                y = rng.randint(y0 + 3, y1 - 3)
-                tiles += [(x, y) for x in range(x0, x1 + 1)]
-
-        # Concentric inner rings mop up whatever budget is left after the outer ring
-        # and dividers, so a large wall allowance is actually spent.
-        for inset in (3, 6, 9, 12):
-            ix0, iy0 = x0 + inset, y0 + inset
-            ix1, iy1 = x1 - inset, y1 - inset
-            if ix1 - ix0 < 4 or iy1 - iy0 < 4:
+        cells = [(x0, y0, x1, y1)]
+        # 4 is the largest footprint in the TH1-9 range, so a compartment narrower
+        # than that on either side can never be filled and is not worth walling.
+        min_interior = 4
+        while remaining > min_interior:
+            cells.sort(key=lambda c: -((c[2] - c[0]) * (c[3] - c[1])))
+            for i, (cx0, cy0, cx1, cy1) in enumerate(cells):
+                wide = (cx1 - cx0 - 1) >= min_interior * 2 + 1
+                tall = (cy1 - cy0 - 1) >= min_interior * 2 + 1
+                if not (wide or tall):
+                    continue
+                vertical = wide if not tall else (wide and rng.random() < 0.5)
+                if vertical:
+                    cut = rng.randint(cx0 + min_interior + 1, cx1 - min_interior - 1)
+                    line = [(cut, y) for y in range(cy0, cy1 + 1)]
+                    sub = [(cx0, cy0, cut, cy1), (cut, cy0, cx1, cy1)]
+                else:
+                    cut = rng.randint(cy0 + min_interior + 1, cy1 - min_interior - 1)
+                    line = [(x, cut) for x in range(cx0, cx1 + 1)]
+                    sub = [(cx0, cy0, cx1, cut), (cx0, cut, cx1, cy1)]
+                fresh = [t for t in line if t not in seen]
+                if len(fresh) > remaining:
+                    continue
+                tiles += fresh
+                seen.update(fresh)
+                remaining -= len(fresh)
+                cells[i:i + 1] = sub
                 break
-            tiles += self._rect_perimeter(ix0, iy0, ix1, iy1)
-        return tiles
+            else:
+                break
+
+        # A surplus goes on rings just inside the outer one, which is what players
+        # do with spare walls. Keep offering candidates until the budget is covered:
+        # some will land on tiles a divider already took, and an unspent wall is a
+        # wall the roster said the base has.
+        inset = 2
+        while len(tiles) < budget and side - 2 * inset >= 6:
+            for t in self._rect_perimeter(x0 + inset, y0 + inset, x1 - inset, y1 - inset):
+                if t not in seen:
+                    tiles.append(t)
+                    seen.add(t)
+            inset += 2
+        return tiles, cells
 
     @staticmethod
     def _rect_perimeter(x0: int, y0: int, x1: int, y1: int) -> list[tuple[int, int]]:

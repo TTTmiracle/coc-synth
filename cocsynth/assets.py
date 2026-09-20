@@ -240,13 +240,14 @@ class SpriteLibrary:
         anchor = self._anchor_for(path, img, mirrored)
         if mirrored:
             img = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-        img, anchor = self._fit_to_footprint(bdef, img, anchor)
+        img, anchor = self._fit_to_footprint(bdef, img, anchor, path.name)
         img, anchor = _vary(img, anchor, bucket)
         name = path.name + (" (mirrored)" if mirrored else "")
         return Sprite(img, anchor, name, make_shadow(img, self.tile_w))
 
     def _fit_to_footprint(
-        self, bdef: BuildingDef, img: Image.Image, anchor: tuple[int, int]
+        self, bdef: BuildingDef, img: Image.Image, anchor: tuple[int, int],
+        filename: str | None = None,
     ) -> tuple[Image.Image, tuple[int, int]]:
         """Scale a sprite so it sits correctly on its tile footprint.
 
@@ -259,11 +260,18 @@ class SpriteLibrary:
         footprint (that is the whole point of an isometric sprite) while its width
         does correspond to the diamond it stands on.
 
-        `scale` in the manifest tweaks a type whose art has unusual padding.
+        `scale` in the manifest tweaks a type whose art has unusual padding, and
+        `scales[filename]` overrides it for one file. Wall segments need the per-file
+        form: a segment that only reaches the tile edge on its connected faces is
+        genuinely narrower than the diamond, and stretching it to fit would break
+        the seam with its neighbour.
         """
         w, h = bdef.footprint
         target = (w + h) * self.tile_w / 2
-        target *= float(self.manifest.get(bdef.id, {}).get("scale", 1.0))
+        entry = self.manifest.get(bdef.id, {})
+        per_file = entry.get("scales", {})
+        target *= float(per_file.get(filename, entry.get("scale", 1.0))
+                        if filename else entry.get("scale", 1.0))
         if img.width == 0 or abs(img.width - target) < 1:
             return img, anchor
 
