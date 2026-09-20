@@ -11,6 +11,11 @@ expects. Does NOT obtain art for you -- point it at images you already have.
     python tools/ingest_sprites.py raw/sweeper_sw.png --type air_sweeper --level 2 --dir 5
 
     # a whole folder named "<type>_lvl<NN>[_dir<D>].png"
+    # an animated source -> one file per frame
+    python tools/ingest_sprites.py raw/cannon.gif --type cannon --level 7 --frames 4
+    python tools/ingest_sprites.py raw/clip.mp4 --type mortar --level 5 --frames 6 --cutout
+
+    # a whole folder named "<type>_lvl<NN>[_dir<D>].png"
     python tools/ingest_sprites.py raw/ --batch
 
 What it does: optional background removal via rembg, crops fully transparent
@@ -27,10 +32,16 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageSequence
+
+#: Containers ffmpeg is used for. Everything else Pillow opens directly.
+VIDEO_SUFFIXES = {".mp4", ".mov", ".webm", ".mkv", ".avi", ".m4v"}
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -53,6 +64,55 @@ def save_manifest(data: dict) -> None:
     MANIFEST.write_text(json.dumps(data, indent=1, sort_keys=True), encoding="utf-8")
 
 
+def load_frames(src: Path, max_frames: int) -> list[Image.Image]:
+    """Read an image, animation or video as a list of RGBA frames.
+
+    Animated GIF/APNG/WebP go through Pillow; video goes through ffmpeg. Frames are
+    sampled evenly across the whole clip rather than taken from the start, so a
+    recording of an idle building covers its full loop.
+    """
+    if src.suffix.lower() in VIDEO_SUFFIXES:
+        frames = _video_frames(src)
+    else:
+        img = Image.open(src)
+        frames = [f.convert("RGBA") for f in ImageSequence.Iterator(img)]
+
+    if not frames:
+        raise SystemExit(f"{src}: no frames could be read")
+    if len(frames) <= max_frames:
+        return frames
+    step = len(frames) / max_frames
+    return [frames[min(len(frames) - 1, int(i * step))] for i in range(max_frames)]
+
+
+def _video_frames(src: Path) -> list[Image.Image]:
+    if not shutil.which("ffmpeg"):
+        raise SystemExit("ffmpeg is needed to read video; install it or export frames yourself")
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(
+            ["ffmpeg", "-loglevel", "error", "-i", str(src), "-vsync", "0",
+             str(Path(tmp) / "f_%05d.png")],
+            check=True,
+        )
+        return [Image.open(f).convert("RGBA").copy() for f in sorted(Path(tmp).glob("f_*.png"))]
+
+
+def align_frames(frames: list[Image.Image]) -> list[Image.Image]:
+    """Crop every frame to one shared box.
+
+    Trimming frames independently is the obvious thing and it is wrong: the alpha
+    bounds shift as the building animates, so each frame gets cropped differently and
+    the building visibly jitters between frames. The union box keeps them registered.
+    """
+    boxes = [f.getbbox() for f in frames]
+    boxes = [b for b in boxes if b is not None]
+    if not boxes:
+        raise SystemExit("every frame is fully transparent after processing")
+    union = (min(b[0] for b in boxes), min(b[1] for b in boxes),
+             max(b[2] for b in boxes), max(b[3] for b in boxes))
+    return [f.crop(union) for f in frames]
+
+
 def remove_background(img: Image.Image) -> Image.Image:
     """Strip an opaque background with rembg, if it is installed."""
     try:
@@ -66,7 +126,7 @@ def remove_background(img: Image.Image) -> Image.Image:
 def ingest_one(
     src: Path, type_id: str, level: int, direction: int | None,
     catalog: Catalog, manifest: dict, cutout: bool, anchor: tuple[int, int] | None,
-    dry_run: bool,
+    dry_run: bool, max_frames: int = 1,
 ) -> str:
     if type_id not in catalog:
         known = ", ".join(sorted(catalog.buildings)[:8])
@@ -78,29 +138,34 @@ def ingest_one(
     if direction is not None and direction >= bdef.directions:
         raise SystemExit(f"{type_id} has {bdef.directions} facings; --dir {direction} is out of range")
 
-    img = Image.open(src).convert("RGBA")
+    frames = load_frames(src, max_frames)
     if cutout:
-        img = remove_background(img)
-    img, _ = trim_alpha(img)
-    if img.getbbox() is None:
-        raise SystemExit(f"{src}: image is fully transparent after processing")
+        frames = [remove_background(f) for f in frames]
+    frames = align_frames(frames)
 
-    suffix = f"_dir{direction}" if direction is not None else ""
-    name = f"{type_id}_lvl{level:02d}{suffix}.png"
-    dest = SPRITES / type_id / name
+    dir_part = f"_dir{direction}" if direction is not None else ""
+    entry = manifest["sprites"].setdefault(type_id, {}) if not dry_run else {}
+    written = []
 
-    point = anchor or (img.width // 2, img.height - 1)
-    if not (0 <= point[0] < img.width and 0 <= point[1] < img.height):
-        raise SystemExit(f"anchor {point} is outside the {img.width}x{img.height} sprite")
+    for i, frame in enumerate(frames):
+        frame_part = f"_f{i:02d}" if len(frames) > 1 else ""
+        name = f"{type_id}_lvl{level:02d}{dir_part}{frame_part}.png"
+        dest = SPRITES / type_id / name
 
-    if dry_run:
-        return f"would write {dest.relative_to(ROOT)} ({img.width}x{img.height}, anchor {point})"
+        point = anchor or (frame.width // 2, frame.height - 1)
+        if not (0 <= point[0] < frame.width and 0 <= point[1] < frame.height):
+            raise SystemExit(f"anchor {point} is outside the {frame.width}x{frame.height} sprite")
+        if not dry_run:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            frame.save(dest)
+            entry.setdefault("anchors", {})[name] = list(point)
+        written.append(name)
 
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    img.save(dest)
-    entry = manifest["sprites"].setdefault(type_id, {})
-    entry.setdefault("anchors", {})[name] = list(point)
-    return f"wrote {dest.relative_to(ROOT)} ({img.width}x{img.height}, anchor {point})"
+    verb = "would write" if dry_run else "wrote"
+    size = f"{frames[0].width}x{frames[0].height}"
+    if len(written) == 1:
+        return f"{verb} {type_id}/{written[0]} ({size})"
+    return f"{verb} {type_id}/ {len(written)} frames {written[0]}..{written[-1]} ({size}, aligned)"
 
 
 def parse_batch_name(path: Path) -> tuple[str, int, int | None] | None:
@@ -122,6 +187,9 @@ def main() -> int:
     ap.add_argument("--anchor", type=int, nargs=2, metavar=("X", "Y"),
                     help="anchor pixel; defaults to bottom-centre")
     ap.add_argument("--cutout", action="store_true", help="run rembg to strip the background")
+    ap.add_argument("--frames", type=int, default=1, metavar="N",
+                    help="extract up to N animation frames from a GIF/APNG/WebP/video, "
+                         "sampled evenly across the clip (default 1)")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -142,14 +210,15 @@ def main() -> int:
             t, lv, d = parsed
             print("  " + ingest_one(path, t, lv, d, catalog, manifest,
                                     args.cutout, tuple(args.anchor) if args.anchor else None,
-                                    args.dry_run))
+                                    args.dry_run, args.frames))
         print(f"{len(files) - skipped} ingested, {skipped} skipped")
     else:
         if not args.type or args.level is None:
             raise SystemExit("--type and --level are required without --batch")
         print("  " + ingest_one(args.src, args.type, args.level, args.direction, catalog,
                                 manifest, args.cutout,
-                                tuple(args.anchor) if args.anchor else None, args.dry_run))
+                                tuple(args.anchor) if args.anchor else None,
+                                args.dry_run, args.frames))
 
     if not args.dry_run:
         save_manifest(manifest)
