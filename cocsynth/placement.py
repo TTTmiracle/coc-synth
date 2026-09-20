@@ -24,6 +24,28 @@ from .schema import CONNECT_E, CONNECT_N, CONNECT_S, CONNECT_W
 from .catalog import BuildingDef, Catalog
 
 LayoutStyle = str  # "scatter" | "clustered" | "compartment"
+
+#: What a player protects first when there are not enough walls to cover
+#: everything. Defences, heroes and the storages holding the loot go inside;
+#: collectors, camps and builder huts live in the grass outside, where losing
+#: them costs least. Below TH7 the wall budget cannot enclose the whole roster,
+#: so this ordering is the difference between a base and a scattered pile.
+_ALWAYS_INSIDE = {"town_hall", "clan_castle", "gold_storage", "elixir_storage",
+                  "dark_elixir_storage"}
+_HAPPY_OUTSIDE = {"army_camp", "builders_hut", "barracks", "dark_barracks",
+                  "gold_mine", "elixir_collector", "dark_elixir_drill"}
+#: Chance a building of each tier is placed outside the walls even when there is
+#: room inside, so the split never looks mechanical.
+_OUTSIDE_CHANCE = (0.03, 0.12, 0.55)
+
+
+def wall_priority(bdef: BuildingDef) -> int:
+    """0 goes inside the walls first, 2 is content to sit outside."""
+    if bdef.id in _ALWAYS_INSIDE or bdef.category in ("defense", "hero"):
+        return 0
+    if bdef.id in _HAPPY_OUTSIDE:
+        return 2
+    return 1
 CountMode = str    # "exact" | "jitter"
 LevelPolicy = str  # "maxed" | "clustered" | "uniform"
 
@@ -116,14 +138,22 @@ class Placer:
         # Biggest footprint first so large pieces get space before it fragments.
         # Ties are shuffled for variety.
         work = self._work_list(roster, th, rng)
-        work.sort(key=lambda item: -item[0].area)
+        work.sort(key=lambda item: (wall_priority(item[0]), -item[0].area))
 
         # Walls go down before the buildings do. A player lays out compartments and
         # then fills them; walling in whatever happens to be left at the end gives
         # one outer ring and no interior, because the interior is already occupied.
         # Knowing the roster's total area up front is what lets the compartments be
         # sized to hold it.
-        demand = sum(b.area for b, _ in work) + (town_hall.area if town_hall else 0)
+        # Room needed, not footprint area: buildings prefer a clear tile around
+        # them, so a 3x3 occupies closer to 4x4 of compartment. Sizing the ring off
+        # the raw area makes it too small, the compartments fill, and the overflow
+        # ends up outside the walls -- a base with a third of its defences in the
+        # grass is the most obvious thing a generator can get wrong.
+        spread = [(b.footprint[0] + 1) * (b.footprint[1] + 1) for b, _ in work]
+        if town_hall is not None:
+            spread.append((town_hall.footprint[0] + 1) * (town_hall.footprint[1] + 1))
+        demand = sum(spread)
         cells: list[tuple[int, int, int, int]] = []
         for bdef in walls:
             next_id, cells = self._place_walls(
@@ -134,7 +164,7 @@ class Placer:
             next_id = self._place_town_hall(town_hall, th, occ, placements, next_id, rng)
 
         for bdef, level in work:
-            pos = self._find_spot(bdef.footprint, occ, rng, cells)
+            pos = self._find_spot(bdef.footprint, occ, rng, cells, wall_priority(bdef))
             if pos is None:
                 shortfall[bdef.id] = shortfall.get(bdef.id, 0) + 1
                 continue
@@ -222,7 +252,8 @@ class Placer:
         return not occ[ty : ty + h, tx : tx + w].any()
 
     def _find_spot(self, footprint: tuple[int, int], occ: np.ndarray, rng: Random,
-                   cells: list[tuple[int, int, int, int]] | None = None) -> tuple[int, int] | None:
+                   cells: list[tuple[int, int, int, int]] | None = None,
+                   priority: int = 1) -> tuple[int, int] | None:
         """Random legal origin for a footprint, or None after max_attempts.
 
         The first pass insists on a clear tile around the building. Players leave
@@ -233,10 +264,15 @@ class Placer:
         crowded corner of a real base looks like.
         """
         w, h = footprint
-        spaced = int(self.max_attempts * self.spacing_effort)
         for attempt in range(self.max_attempts):
-            tx, ty = self._candidate(w, h, rng, cells)
-            margin = 1 if attempt < spaced else 0
+            frac = attempt / self.max_attempts
+            # Late attempts give up on both niceties in turn: first the clear ring,
+            # then the compartments themselves. Without that second release a
+            # building whose compartments are full never tries the open grid and is
+            # dropped from the base entirely, which shows up as a missing defence.
+            target = cells if frac < 0.7 else None
+            margin = 1 if frac < self.spacing_effort else 0
+            tx, ty = self._candidate(w, h, rng, target, priority)
             if self._fits(tx, ty, w, h, occ, margin):
                 return tx, ty
         return None
@@ -260,12 +296,13 @@ class Placer:
         return (rng.randint(cx0 + 1, cx1 - w), rng.randint(cy0 + 1, cy1 - h))
 
     def _candidate(self, w: int, h: int, rng: Random,
-                   cells: list[tuple[int, int, int, int]] | None = None) -> tuple[int, int]:
+                   cells: list[tuple[int, int, int, int]] | None = None,
+                   priority: int = 1) -> tuple[int, int]:
         """Sample a candidate origin according to the layout style."""
         hi_x, hi_y = self.tiles - w, self.tiles - h
         # A handful of buildings always sit outside the walls in a real base --
         # collectors and army camps mostly -- so this is not an unconditional rule.
-        if cells and rng.random() > self.outside_wall_rate:
+        if cells and rng.random() > _OUTSIDE_CHANCE[priority] * self.outside_wall_rate / 0.12:
             spot = self._compartment_candidate(w, h, rng, cells)
             if spot is not None:
                 return spot
@@ -368,7 +405,7 @@ class Placer:
 
         # Interior big enough to hold the roster at a realistic packing density,
         # but never bigger than the budget can enclose.
-        need = int(math.ceil(math.sqrt(demand / 0.55))) + 2
+        need = int(math.ceil(math.sqrt(demand / 0.78))) + 2
         afford = (budget + 4) // 4
         side = max(6, min(need, afford, self.tiles - 2))
 

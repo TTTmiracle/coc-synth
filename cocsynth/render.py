@@ -138,14 +138,17 @@ class Renderer:
         gen = np.random.default_rng(rng.getrandbits(32))
 
         # --- broad patchiness -------------------------------------------------
+        def octave(cells: int) -> np.ndarray:
+            rows = max(2, int(cells * h / max(w, 1)))
+            coarse = gen.random((rows, cells), dtype=np.float32)
+            up = Image.fromarray((coarse * 255).astype(np.uint8), mode="L")
+            return np.asarray(up.resize((w, h), Image.Resampling.BICUBIC),
+                              dtype=np.float32) / 255.0
+
         field = np.zeros((h, w), dtype=np.float32)
         weight = 0.0
-        for cells, amplitude in ((7, 0.75), (19, 0.85), (47, 0.5), (115, 0.28)):
-            rows = max(2, int(cells * h / max(w, 1)))
-            coarse = gen.random((max(2, rows), cells), dtype=np.float32)
-            up = Image.fromarray((coarse * 255).astype(np.uint8), mode="L")
-            field += amplitude * np.asarray(
-                up.resize((w, h), Image.Resampling.BICUBIC), dtype=np.float32) / 255.0
+        for cells, amplitude in ((9, 0.6), (23, 0.9), (57, 0.55), (131, 0.3)):
+            field += amplitude * octave(cells)
             weight += amplitude
         field /= weight
 
@@ -154,18 +157,30 @@ class Renderer:
         tx, ty = proj.px_to_tile(xs.astype(np.float32), ys.astype(np.float32))
         ix, iy = np.floor(tx).astype(np.int64), np.floor(ty).astype(np.int64)
         # Cheap spatial hash: a fixed per-tile value, stable across the image.
+        # Quantising it to a few steps is deliberate -- the lattice should read as
+        # discrete tiles, which is what it looks like in game, not as smooth drift.
         tile_noise = (((ix * 73856093) ^ (iy * 19349663)) & 0x3FF) / 1023.0
-        field += (tile_noise.astype(np.float32) - 0.5) * 0.05
+        field += (np.floor(tile_noise.astype(np.float32) * 4) / 3.0 - 0.5) * 0.075
 
         # Blade-scale grain. Added after the upscales so it stays pixel-crisp
         # instead of being smeared into the soft look of resized noise.
-        field += (gen.random((h, w), dtype=np.float32) - 0.5) * 0.07
+        field += (gen.random((h, w), dtype=np.float32) - 0.5) * 0.06
         field = np.clip(field, 0.0, 1.0)
 
         dark = np.array((58, 101, 41), dtype=np.float32)
         light = np.array((129, 172, 80), dtype=np.float32)
         t = np.clip((field - 0.34) * 2.1, 0.0, 1.0)[:, :, None]
         ground = dark * (1.0 - t) + light * t
+
+        # --- worn patches -----------------------------------------------------
+        # Thresholded rather than blended: smooth noise alone gives soft clouds,
+        # and clouds are the giveaway. Cutting a mid-frequency field at a level
+        # produces irregular regions with an actual edge, which is how the dry and
+        # trampled ground in a real base is drawn.
+        patch = octave(31)
+        patch = np.clip((patch - 0.60) * 14.0, 0.0, 1.0)[:, :, None]
+        worn = np.array((112, 135, 62), dtype=np.float32)
+        ground = ground * (1.0 - patch * 0.55) + worn * (patch * 0.55)
 
         # --- edge of the buildable area ---------------------------------------
         n = float(proj.tiles)
@@ -192,17 +207,21 @@ class Renderer:
         """
         d = ImageDraw.Draw(img, "RGBA")
         w, h = img.size
-        count = max(1, (w * h) // max(1, self.tile_w * 3))
-        blade = max(2, round(self.tile_w * 0.07))
-        for _ in range(count):
-            x, y = rng.randrange(w), rng.randrange(h)
-            if rng.random() < 0.55:
-                c = (50, 90, 35, rng.randint(45, 90))
+        clumps = max(1, (w * h) // max(1, self.tile_w * self.tile_w // 2))
+        blade = max(2, round(self.tile_w * 0.085))
+        for _ in range(clumps):
+            cx, cy = rng.randrange(w), rng.randrange(h)
+            if rng.random() < 0.6:
+                c = (48, 88, 34, rng.randint(55, 100))
             else:
-                c = (150, 190, 100, rng.randint(35, 70))
-            for _ in range(rng.randint(1, 2)):
-                lean = rng.uniform(-0.55, 0.55)
-                d.line([(x, y), (x + lean * blade, y - blade * rng.uniform(0.5, 1.0))],
+                c = (152, 192, 102, rng.randint(40, 80))
+            # A tuft, not a speck: scattered single strokes read as sensor noise,
+            # while three or four leaning off one spot read as a plant.
+            for _ in range(rng.randint(3, 5)):
+                x = cx + rng.randint(-blade, blade)
+                y = cy + rng.randint(-blade // 2, blade // 2)
+                lean = rng.uniform(-0.6, 0.6)
+                d.line([(x, y), (x + lean * blade, y - blade * rng.uniform(0.6, 1.1))],
                        fill=c, width=1)
 
     @staticmethod
