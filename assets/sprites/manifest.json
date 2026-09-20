@@ -146,7 +146,8 @@
           77,
           128
         ]
-      }
+      },
+      "scale": 0.45
     },
     "barracks": {
       "anchors": {
@@ -1730,6 +1731,9 @@
           191
         ]
       }
+    },
+    "_notes": {
+      "scale": "Fraction of the footprint diamond width the art spans. Omitted types use assets.ART_FILL. army_camp is far below it because its art is only the grill -- the 4x4 footprint is mostly the ground the troops stand on, not the object."
     }
   }
 }
