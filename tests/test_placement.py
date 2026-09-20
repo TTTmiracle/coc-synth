@@ -250,3 +250,16 @@ def test_the_exhaustive_fallback_finds_a_gap_random_probing_would_miss(catalog):
     assert placer._find_spot((3, 3), occ, Random(1)) == (20, 7)
     occ[7:10, 20:23] = 1
     assert placer._find_spot((3, 3), occ, Random(1)) is None
+
+
+def test_the_town_hall_is_always_at_its_town_hall_level(catalog):
+    """A TH9 base has a level 9 Town Hall -- that is what the number means. Rolling
+    it like any other building produced TH9 bases wearing level 4 Town Hall art,
+    which makes every TH9-only building beside it look illegal."""
+    for th in range(1, catalog.max_town_hall + 1):
+        for seed in range(5):
+            result = Placer(catalog).generate(th, Random(seed))
+            halls = [p for p in result.placements if p.type_id == "town_hall"]
+            assert len(halls) == 1
+            assert halls[0].level == th, \
+                f"TH{th} seed {seed} rendered a level {halls[0].level} Town Hall"

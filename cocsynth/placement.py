@@ -428,7 +428,12 @@ class Placer:
             tx = c - w // 2 + rng.randint(-jitter, jitter)
             ty = c - h // 2 + rng.randint(-jitter, jitter)
             if self._fits(tx, ty, w, h, occ):
-                return self._commit(bdef, self._roll_level(bdef, th, rng), (tx, ty), occ, out, next_id, rng)
+                # The Town Hall's level is not rolled: it *is* the Town Hall level.
+                # Rolling it produced TH9 bases showing a level 4 Town Hall, which
+                # makes the whole base incoherent -- the X-Bows beside it become
+                # impossible, and a reader dates the base by the building rather
+                # than by the label.
+                return self._commit(bdef, th, (tx, ty), occ, out, next_id, rng)
         # An empty grid always has room for a 4x4 at the centre.
         raise PlacementError("could not place the Town Hall on an empty grid")
 
