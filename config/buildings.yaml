@@ -1,0 +1,408 @@
+# GENERATED FILE -- do not edit by hand.
+# Regenerate with: python tools/import_game_data.py --max-th 9
+# Source: https://github.com/chiefpansancolt/clash-of-clans-data
+# Pinned commit: 55d9bb09914f3a14420734074a68a02ac50a76ef
+#
+# per_th holds only Town Hall levels where the building is UNLOCKED.
+# A missing TH means the building cannot exist at that TH at all.
+# count = hard maximum number allowed. max_level = highest level buildable.
+# directions = selectable facings (1 = fixed orientation).
+max_town_hall: 9
+grid_tiles: 44
+buildings:
+  town_hall:
+    display_name: Town Hall
+    category: town-hall
+    footprint: [4, 4]
+    directions: 1
+    per_th:
+      1: { count: 1, max_level: 1 }
+      2: { count: 1, max_level: 2 }
+      3: { count: 1, max_level: 3 }
+      4: { count: 1, max_level: 4 }
+      5: { count: 1, max_level: 5 }
+      6: { count: 1, max_level: 6 }
+      7: { count: 1, max_level: 7 }
+      8: { count: 1, max_level: 8 }
+      9: { count: 1, max_level: 9 }
+  wall:
+    display_name: Wall
+    category: wall
+    footprint: [1, 1]
+    directions: 1
+    per_th:
+      2: { count: 25, max_level: 2 }
+      3: { count: 50, max_level: 3 }
+      4: { count: 75, max_level: 4 }
+      5: { count: 100, max_level: 5 }
+      6: { count: 125, max_level: 6 }
+      7: { count: 175, max_level: 7 }
+      8: { count: 225, max_level: 8 }
+      9: { count: 250, max_level: 10 }
+  air_defense:
+    display_name: Air Defense
+    category: defense
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      4: { count: 1, max_level: 2 }
+      5: { count: 1, max_level: 3 }
+      6: { count: 2, max_level: 4 }
+      7: { count: 3, max_level: 5 }
+      8: { count: 3, max_level: 6 }
+      9: { count: 4, max_level: 7 }
+  air_sweeper:
+    display_name: Air Sweeper
+    category: defense
+    footprint: [2, 2]
+    directions: 8
+    per_th:
+      6: { count: 1, max_level: 2 }
+      7: { count: 1, max_level: 3 }
+      8: { count: 1, max_level: 4 }
+      9: { count: 2, max_level: 5 }
+  archer_tower:
+    display_name: Archer Tower
+    category: defense
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      2: { count: 1, max_level: 2 }
+      3: { count: 1, max_level: 3 }
+      4: { count: 2, max_level: 4 }
+      5: { count: 3, max_level: 6 }
+      6: { count: 3, max_level: 7 }
+      7: { count: 4, max_level: 8 }
+      8: { count: 5, max_level: 10 }
+      9: { count: 6, max_level: 11 }
+  bomb_tower:
+    display_name: Bomb Tower
+    category: defense
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      8: { count: 1, max_level: 2 }
+      9: { count: 1, max_level: 3 }
+  builders_hut:
+    display_name: Builder's Hut
+    category: defense
+    footprint: [2, 2]
+    directions: 1
+    per_th:
+      1: { count: 5, max_level: 1 }
+      2: { count: 5, max_level: 1 }
+      3: { count: 5, max_level: 1 }
+      4: { count: 5, max_level: 1 }
+      5: { count: 5, max_level: 1 }
+      6: { count: 5, max_level: 1 }
+      7: { count: 5, max_level: 1 }
+      8: { count: 5, max_level: 1 }
+      9: { count: 5, max_level: 1 }
+  cannon:
+    display_name: Cannon
+    category: defense
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      1: { count: 2, max_level: 2 }
+      2: { count: 2, max_level: 3 }
+      3: { count: 2, max_level: 4 }
+      4: { count: 2, max_level: 5 }
+      5: { count: 3, max_level: 6 }
+      6: { count: 3, max_level: 7 }
+      7: { count: 5, max_level: 8 }
+      8: { count: 5, max_level: 10 }
+      9: { count: 5, max_level: 11 }
+  hidden_tesla:
+    display_name: Hidden Tesla
+    category: defense
+    footprint: [2, 2]
+    directions: 1
+    per_th:
+      7: { count: 2, max_level: 3 }
+      8: { count: 3, max_level: 6 }
+      9: { count: 4, max_level: 7 }
+  mortar:
+    display_name: Mortar
+    category: defense
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      3: { count: 1, max_level: 1 }
+      4: { count: 1, max_level: 2 }
+      5: { count: 1, max_level: 3 }
+      6: { count: 2, max_level: 4 }
+      7: { count: 3, max_level: 5 }
+      8: { count: 4, max_level: 6 }
+      9: { count: 4, max_level: 7 }
+  wizard_tower:
+    display_name: Wizard Tower
+    category: defense
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      5: { count: 1, max_level: 2 }
+      6: { count: 2, max_level: 3 }
+      7: { count: 2, max_level: 4 }
+      8: { count: 3, max_level: 6 }
+      9: { count: 4, max_level: 7 }
+  x_bow:
+    display_name: X-Bow
+    category: defense
+    footprint: [4, 4]
+    directions: 1
+    per_th:
+      9: { count: 2, max_level: 3 }
+  air_bomb:
+    display_name: Air Bomb
+    category: trap
+    footprint: [1, 1]
+    directions: 1
+    per_th:
+      5: { count: 2, max_level: 2 }
+      6: { count: 2, max_level: 2 }
+      7: { count: 2, max_level: 3 }
+      8: { count: 4, max_level: 3 }
+      9: { count: 4, max_level: 4 }
+  bomb:
+    display_name: Bomb
+    category: trap
+    footprint: [1, 1]
+    directions: 1
+    per_th:
+      3: { count: 2, max_level: 2 }
+      4: { count: 2, max_level: 2 }
+      5: { count: 4, max_level: 3 }
+      6: { count: 4, max_level: 3 }
+      7: { count: 6, max_level: 4 }
+      8: { count: 6, max_level: 5 }
+      9: { count: 6, max_level: 6 }
+  giant_bomb:
+    display_name: Giant Bomb
+    category: trap
+    footprint: [2, 2]
+    directions: 1
+    per_th:
+      6: { count: 1, max_level: 2 }
+      7: { count: 2, max_level: 2 }
+      8: { count: 3, max_level: 3 }
+      9: { count: 4, max_level: 3 }
+  seeking_air_mine:
+    display_name: Seeking Air Mine
+    category: trap
+    footprint: [1, 1]
+    directions: 1
+    per_th:
+      7: { count: 1, max_level: 1 }
+      8: { count: 2, max_level: 1 }
+      9: { count: 4, max_level: 2 }
+  skeleton_trap:
+    display_name: Skeleton Trap
+    category: trap
+    footprint: [1, 1]
+    directions: 1
+    per_th:
+      8: { count: 2, max_level: 2 }
+      9: { count: 2, max_level: 3 }
+  spring_trap:
+    display_name: Spring Trap
+    category: trap
+    footprint: [1, 1]
+    directions: 1
+    per_th:
+      4: { count: 2, max_level: 1 }
+      5: { count: 2, max_level: 1 }
+      6: { count: 4, max_level: 1 }
+      7: { count: 4, max_level: 2 }
+      8: { count: 6, max_level: 3 }
+      9: { count: 6, max_level: 4 }
+  clan_castle:
+    display_name: Clan Castle
+    category: resource
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      1: { count: 1, max_level: 1 }
+      2: { count: 1, max_level: 1 }
+      3: { count: 1, max_level: 1 }
+      4: { count: 1, max_level: 2 }
+      5: { count: 1, max_level: 2 }
+      6: { count: 1, max_level: 3 }
+      7: { count: 1, max_level: 3 }
+      8: { count: 1, max_level: 4 }
+      9: { count: 1, max_level: 5 }
+  dark_elixir_drill:
+    display_name: Dark Elixir Drill
+    category: resource
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      7: { count: 1, max_level: 3 }
+      8: { count: 2, max_level: 3 }
+      9: { count: 3, max_level: 6 }
+  dark_elixir_storage:
+    display_name: Dark Elixir Storage
+    category: resource
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      7: { count: 1, max_level: 2 }
+      8: { count: 1, max_level: 4 }
+      9: { count: 1, max_level: 6 }
+  elixir_collector:
+    display_name: Elixir Collector
+    category: resource
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      1: { count: 1, max_level: 2 }
+      2: { count: 2, max_level: 4 }
+      3: { count: 3, max_level: 6 }
+      4: { count: 4, max_level: 8 }
+      5: { count: 5, max_level: 10 }
+      6: { count: 6, max_level: 10 }
+      7: { count: 6, max_level: 11 }
+      8: { count: 6, max_level: 12 }
+      9: { count: 7, max_level: 12 }
+  elixir_storage:
+    display_name: Elixir Storage
+    category: resource
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      1: { count: 1, max_level: 1 }
+      2: { count: 1, max_level: 3 }
+      3: { count: 2, max_level: 6 }
+      4: { count: 2, max_level: 8 }
+      5: { count: 2, max_level: 9 }
+      6: { count: 2, max_level: 10 }
+      7: { count: 2, max_level: 11 }
+      8: { count: 3, max_level: 11 }
+      9: { count: 4, max_level: 11 }
+  gold_mine:
+    display_name: Gold Mine
+    category: resource
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      1: { count: 1, max_level: 2 }
+      2: { count: 2, max_level: 4 }
+      3: { count: 3, max_level: 6 }
+      4: { count: 4, max_level: 8 }
+      5: { count: 5, max_level: 10 }
+      6: { count: 6, max_level: 10 }
+      7: { count: 6, max_level: 11 }
+      8: { count: 6, max_level: 12 }
+      9: { count: 7, max_level: 12 }
+  gold_storage:
+    display_name: Gold Storage
+    category: resource
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      1: { count: 1, max_level: 1 }
+      2: { count: 1, max_level: 3 }
+      3: { count: 2, max_level: 6 }
+      4: { count: 2, max_level: 8 }
+      5: { count: 2, max_level: 9 }
+      6: { count: 2, max_level: 10 }
+      7: { count: 2, max_level: 11 }
+      8: { count: 3, max_level: 11 }
+      9: { count: 4, max_level: 11 }
+  army_camp:
+    display_name: Army Camp
+    category: army
+    footprint: [4, 4]
+    directions: 1
+    per_th:
+      1: { count: 1, max_level: 1 }
+      2: { count: 1, max_level: 2 }
+      3: { count: 2, max_level: 3 }
+      4: { count: 2, max_level: 4 }
+      5: { count: 3, max_level: 5 }
+      6: { count: 3, max_level: 6 }
+      7: { count: 4, max_level: 6 }
+      8: { count: 4, max_level: 6 }
+      9: { count: 4, max_level: 7 }
+  barracks:
+    display_name: Barracks
+    category: army
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      1: { count: 1, max_level: 3 }
+      2: { count: 1, max_level: 4 }
+      3: { count: 1, max_level: 5 }
+      4: { count: 1, max_level: 6 }
+      5: { count: 1, max_level: 7 }
+      6: { count: 1, max_level: 8 }
+      7: { count: 1, max_level: 9 }
+      8: { count: 1, max_level: 10 }
+      9: { count: 1, max_level: 11 }
+  blacksmith:
+    display_name: Blacksmith
+    category: army
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      8: { count: 1, max_level: 1 }
+      9: { count: 1, max_level: 2 }
+  dark_barracks:
+    display_name: Dark Barracks
+    category: army
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      7: { count: 1, max_level: 2 }
+      8: { count: 1, max_level: 4 }
+      9: { count: 1, max_level: 6 }
+  dark_spell_factory:
+    display_name: Dark Spell Factory
+    category: army
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      8: { count: 1, max_level: 2 }
+      9: { count: 1, max_level: 4 }
+  hero_hall:
+    display_name: Hero Hall
+    category: army
+    footprint: [4, 4]
+    directions: 1
+    per_th:
+      7: { count: 1, max_level: 1 }
+      8: { count: 1, max_level: 2 }
+      9: { count: 1, max_level: 3 }
+  spell_factory:
+    display_name: Spell Factory
+    category: army
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      5: { count: 1, max_level: 1 }
+      6: { count: 1, max_level: 2 }
+      7: { count: 1, max_level: 3 }
+      8: { count: 1, max_level: 3 }
+      9: { count: 1, max_level: 4 }
+  laboratory:
+    display_name: Laboratory
+    category: research
+    footprint: [3, 3]
+    directions: 1
+    per_th:
+      3: { count: 1, max_level: 1 }
+      4: { count: 1, max_level: 2 }
+      5: { count: 1, max_level: 3 }
+      6: { count: 1, max_level: 4 }
+      7: { count: 1, max_level: 5 }
+      8: { count: 1, max_level: 6 }
+      9: { count: 1, max_level: 7 }
+  hero_banner:
+    display_name: Hero Banner
+    category: other
+    footprint: [2, 2]
+    directions: 1
+    per_th:
+      7: { count: 1, max_level: 1 }
+      8: { count: 1, max_level: 1 }
+      9: { count: 2, max_level: 1 }
