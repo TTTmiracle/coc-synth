@@ -10,6 +10,11 @@
           50,
           137
         ]
+      },
+      "scale": 0.633,
+      "measured": {
+        "ncc": 0.79,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "air_defense": {
@@ -42,6 +47,11 @@
           78,
           185
         ]
+      },
+      "scale": 0.467,
+      "measured": {
+        "ncc": 0.705,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "air_sweeper": {
@@ -66,6 +76,11 @@
           71,
           151
         ]
+      },
+      "scale": 0.883,
+      "measured": {
+        "ncc": 0.537,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "archer_tower": {
@@ -114,6 +129,11 @@
           82,
           224
         ]
+      },
+      "scale": 0.633,
+      "measured": {
+        "ncc": 0.698,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "army_camp": {
@@ -219,6 +239,11 @@
           28,
           68
         ]
+      },
+      "scale": 0.633,
+      "measured": {
+        "ncc": 0.73,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "bomb_tower": {
@@ -243,6 +268,11 @@
           50,
           127
         ]
+      },
+      "scale": 0.717,
+      "measured": {
+        "ncc": 0.821,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "cannon": {
@@ -371,6 +401,11 @@
           81,
           192
         ]
+      },
+      "scale": 0.633,
+      "measured": {
+        "ncc": 0.611,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "dark_elixir_storage": {
@@ -419,6 +454,11 @@
           91,
           142
         ]
+      },
+      "scale": 0.383,
+      "measured": {
+        "ncc": 0.571,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "elixir_collector": {
@@ -531,6 +571,11 @@
           51,
           88
         ]
+      },
+      "scale": 0.383,
+      "measured": {
+        "ncc": 0.71,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "gold_mine": {
@@ -647,6 +692,11 @@
           180,
           331
         ]
+      },
+      "scale": 0.967,
+      "measured": {
+        "ncc": 0.735,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "hidden_tesla": {
@@ -679,6 +729,11 @@
           52,
           174
         ]
+      },
+      "scale": 0.467,
+      "measured": {
+        "ncc": 0.602,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "laboratory": {
@@ -711,6 +766,11 @@
           98,
           163
         ]
+      },
+      "scale": 0.8,
+      "measured": {
+        "ncc": 0.77,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "mortar": {
@@ -743,6 +803,11 @@
           54,
           118
         ]
+      },
+      "scale": 0.467,
+      "measured": {
+        "ncc": 0.534,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "seeking_air_mine": {
@@ -751,6 +816,11 @@
           46,
           146
         ]
+      },
+      "scale": 0.633,
+      "measured": {
+        "ncc": 0.684,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "skeleton_trap": {
@@ -763,6 +833,11 @@
           37,
           95
         ]
+      },
+      "scale": 0.633,
+      "measured": {
+        "ncc": 0.769,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "spell_factory": {
@@ -795,6 +870,11 @@
           42,
           76
         ]
+      },
+      "scale": 0.717,
+      "measured": {
+        "ncc": 0.816,
+        "source": "reference/base_a.jpg|base_c.jpg"
       }
     },
     "town_hall": {
@@ -1733,7 +1813,7 @@
       }
     },
     "_notes": {
-      "scale": "Fraction of the footprint diamond width the art spans. Omitted types use assets.ART_FILL. army_camp is far below it because its art is only the grill -- the 4x4 footprint is mostly the ground the troops stand on, not the object."
+      "scale": "Fraction of the footprint diamond width the art spans, measured per type by masked colour template matching against reference/ screenshots over a scale sweep; 'measured.ncc' is the correlation it was accepted on. Types without an entry scored too low to trust and fall back to assets.ART_FILL. army_camp is set from observation: its art is only the grill, while the 4x4 footprint is the ground its troops stand on."
     }
   }
 }

@@ -84,3 +84,22 @@ def crop(result: RenderResult, box: tuple[int, int, int, int], min_visible: floa
         )
 
     return RenderResult(image, kept, result.projection, dropped)
+
+
+def grid_window(result, pad_tiles: float = 1.5) -> tuple[int, int, int, int]:
+    """A crop box holding the whole buildable grid, plus a border of what is
+    outside it.
+
+    The camera window is normally placed to look at the base, which cuts the grid
+    wherever the base is not. When the point of the image is to show the playing
+    field -- the full 44x44 and the darker ground where building stops -- the
+    window has to be driven by the grid itself, not by where the buildings are.
+    """
+    proj = result.projection
+    x0, y0, x1, y1 = proj.grid_bounds_px()
+    pad_x = int(round(pad_tiles * proj.tile_w))
+    pad_y = int(round(pad_tiles * proj.tile_h))
+    w, h = result.image.size
+    # Sprites stand above their tile, so the top needs more room than the bottom.
+    return (max(0, x0 - pad_x), max(0, y0 - pad_y - proj.tile_w * 2),
+            min(w, x1 + pad_x), min(h, y1 + pad_y))

@@ -212,3 +212,77 @@ def diamond_fit(path: str) -> dict:
 
 if False:
     pass
+
+
+class Scene:
+    """A reference screenshot, pre-transformed so many templates can be tried.
+
+    The image side of every correlation is identical no matter which sprite is
+    being matched, so it is computed once here. Without that, sweeping 29 types
+    across a dozen scales re-runs the same transforms a few thousand times.
+    """
+
+    def __init__(self, path: str, tile_w: float, downscale: float = 0.5):
+        img = Image.open(path).convert("RGB")
+        self.scale = downscale
+        size = (int(img.width * downscale), int(img.height * downscale))
+        img = img.resize(size, Image.Resampling.LANCZOS)
+        self.tile_w = tile_w * downscale
+        self.shape = (img.height, img.width)
+        arr = np.asarray(img).astype(float)
+        self.chan = [highpass(arr[..., i]) for i in range(3)]
+        self.f_chan = [np.fft.rfft2(c, s=self.shape) for c in self.chan]
+        self.f_sq = [np.fft.rfft2(c * c, s=self.shape) for c in self.chan]
+
+    def _inv(self, fa, fk):
+        return np.fft.irfft2(fa * np.conj(fk), s=self.shape)
+
+    def score(self, tmpl: list[np.ndarray], mask: np.ndarray) -> float:
+        th, tw = mask.shape
+        H, W = self.shape
+        if th >= H or tw >= W:
+            return -1.0
+        n = mask.sum()
+        if n < 30:
+            return -1.0
+        f_mask = np.fft.rfft2(mask.astype(float), s=self.shape)
+        out = []
+        for i in range(3):
+            t = np.where(mask, tmpl[i], 0.0)
+            t_sum, t_sq = t.sum(), (t * t).sum()
+            t_var = t_sq - t_sum * t_sum / n
+            if t_var <= 0:
+                return -1.0
+            s1 = self._inv(self.f_chan[i], f_mask)
+            s2 = self._inv(self.f_sq[i], f_mask)
+            s3 = self._inv(self.f_chan[i], np.fft.rfft2(t, s=self.shape))
+            ncc = (s3 - s1 * (t_sum / n)) / np.sqrt(
+                np.maximum(s2 - s1 * s1 / n, 1e-9) * t_var)
+            ncc[H - th + 1:, :] = -1
+            ncc[:, W - tw + 1:] = -1
+            out.append(float(np.nanmax(ncc)))
+        return float(np.mean(out))
+
+
+def sweep(scene: Scene, sprite_path: str, footprint: int,
+          lo: float = 0.30, hi: float = 1.30, steps: int = 13):
+    """Best interior peak over a sweep of art-width fractions."""
+    src = Image.open(sprite_path).convert("RGBA")
+    src = src.crop(src.getbbox())
+    diamond = footprint * scene.tile_w
+    res = []
+    for k in range(steps):
+        frac = lo + (hi - lo) * k / (steps - 1)
+        w = int(round(frac * diamond))
+        h = max(1, round(src.height * w / src.width))
+        if w < 10 or h < 10 or h > scene.shape[0] - 2:
+            res.append((-1.0, frac, 0.0))
+            continue
+        r = src.resize((w, h), Image.Resampling.LANCZOS)
+        arr = np.asarray(r.convert("RGB")).astype(float)
+        m = np.asarray(r.getchannel("A")) > 128
+        res.append((scene.score([highpass(arr[..., i]) for i in range(3)], m),
+                    frac, h / scene.tile_w))
+    peaks = [res[i] for i in range(1, len(res) - 1)
+             if res[i][0] >= res[i - 1][0] and res[i][0] >= res[i + 1][0]]
+    return max(peaks) if peaks else (-1.0, 0.0, 0.0)
