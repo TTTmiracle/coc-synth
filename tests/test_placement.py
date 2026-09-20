@@ -169,3 +169,84 @@ def test_long_wall_runs_are_detected(placer):
     masks = [p.connections for p in result.placements if p.type_id == "wall"]
     straight = sum(1 for m in masks if m in (5, 10))
     assert straight > len(masks) * 0.5, f"only {straight}/{len(masks)} walls are in runs"
+
+
+def test_defences_end_up_inside_the_walls(catalog):
+    """At TH8 and above the wall budget can enclose the whole defensive roster, so
+    it must. Defences left out in the grass is the single most obvious way for a
+    generated layout to read as fake -- nobody builds a base like that."""
+    from cocsynth.placement import wall_priority
+
+    for th in (8, 9):
+        for seed in range(4):
+            result = Placer(catalog).generate(th, Random(seed))
+            walls = [p.tile for p in result.placements if p.type_id == "wall"]
+            x0, x1 = min(t[0] for t in walls), max(t[0] for t in walls)
+            y0, y1 = min(t[1] for t in walls), max(t[1] for t in walls)
+            for p in result.placements:
+                if p.type_id == "wall":
+                    continue
+                if wall_priority(catalog.buildings[p.type_id]) != 0:
+                    continue
+                w, h = p.footprint
+                assert x0 <= p.tile[0] and p.tile[0] + w - 1 <= x1, \
+                    f"TH{th} seed {seed}: {p.type_id} is outside the walls"
+                assert y0 <= p.tile[1] and p.tile[1] + h - 1 <= y1, \
+                    f"TH{th} seed {seed}: {p.type_id} is outside the walls"
+
+
+def test_collectors_are_the_ones_left_outside(catalog):
+    """The flip side: mines, collectors and camps should mostly sit in the grass.
+    If everything ends up inside, the priority ordering has stopped doing anything
+    and low Town Halls will overflow their walls at random instead."""
+    from cocsynth.placement import wall_priority
+
+    outside = total = 0
+    for seed in range(6):
+        result = Placer(catalog).generate(9, Random(seed))
+        walls = [p.tile for p in result.placements if p.type_id == "wall"]
+        x0, x1 = min(t[0] for t in walls), max(t[0] for t in walls)
+        y0, y1 = min(t[1] for t in walls), max(t[1] for t in walls)
+        for p in result.placements:
+            if p.type_id == "wall" or wall_priority(catalog.buildings[p.type_id]) != 2:
+                continue
+            total += 1
+            w, h = p.footprint
+            if not (x0 <= p.tile[0] and p.tile[0] + w - 1 <= x1
+                    and y0 <= p.tile[1] and p.tile[1] + h - 1 <= y1):
+                outside += 1
+    assert total > 20
+    assert outside / total > 0.15, "nothing is being left outside the walls any more"
+
+
+def test_wall_levels_track_the_town_hall(catalog):
+    """Wooden level 1 walls around a maxed TH9 is the sort of thing a player spots
+    instantly. Every segment should sit within two levels of the cap."""
+    for th in (5, 7, 9):
+        cap = catalog.rule("wall", th).max_level
+        for seed in range(4):
+            result = Placer(catalog).generate(th, Random(seed))
+            levels = {p.level for p in result.placements if p.type_id == "wall"}
+            assert levels, f"TH{th} produced no walls"
+            assert min(levels) >= max(1, cap - 2), \
+                f"TH{th} seed {seed}: wall levels {sorted(levels)} against cap {cap}"
+            assert max(levels) <= cap
+
+
+def test_walls_form_runs_rather_than_scattered_posts(catalog):
+    """Clash walls are laid as compartments. If most segments have no neighbour the
+    autotile mask is meaningless and the render is back to a field of fence posts."""
+    result = Placer(catalog).generate(9, Random(4))
+    walls = [p for p in result.placements if p.type_id == "wall"]
+    lonely = [p for p in walls if p.connections == 0]
+    assert len(lonely) / len(walls) < 0.05
+
+
+def test_the_exhaustive_fallback_finds_a_gap_random_probing_would_miss(catalog):
+    """A full grid with one hole left: random probing can miss it, the scan cannot."""
+    placer = Placer(catalog)
+    occ = np.ones((placer.tiles, placer.tiles), dtype=np.uint16)
+    occ[7:10, 20:23] = 0
+    assert placer._find_spot((3, 3), occ, Random(1)) == (20, 7)
+    occ[7:10, 20:23] = 1
+    assert placer._find_spot((3, 3), occ, Random(1)) is None
