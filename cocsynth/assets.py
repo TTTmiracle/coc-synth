@@ -36,8 +36,23 @@ log = logging.getLogger(__name__)
 
 DEFAULT_SPRITE_DIR = Path(__file__).resolve().parent.parent / "assets" / "sprites"
 SPRITE_RE = re.compile(
-    r"^(?P<type>.+)_lvl(?P<level>\d+)(?:_dir(?P<dir>\d+))?(?:_f(?P<frame>\d+))?\.png$", re.I
+    r"^(?P<type>.+)_lvl(?P<level>\d+)(?:_dir(?P<dir>\d+))?(?:_c(?P<conn>\d+))?"
+    r"(?:_f(?P<frame>\d+))?\.png$",
+    re.I,
 )
+
+#: Connection masks to try when the exact one is missing, in order of preference.
+#: A missing T-junction is better served by the straight run along the same axis
+#: than by the isolated post, which is what makes a wall look like a fence stake.
+CONNECT_FALLBACK: dict[int, tuple[int, ...]] = {
+    0: (),
+    1: (5, 0), 4: (5, 0), 5: (0,),                      # north/south ends, vertical run
+    2: (10, 0), 8: (10, 0), 10: (0,),                   # east/west ends, horizontal run
+    3: (0,), 6: (0,), 9: (0,), 12: (0,),                # corners
+    7: (5, 0), 13: (5, 0),                              # T, vertical through
+    11: (10, 0), 14: (10, 0),                           # T, horizontal through
+    15: (10, 5, 0),                                     # cross
+}
 
 #: Distinct per-instance appearance variants cached per sprite. Buildings in Clash
 #: are animated, so two Cannons in one base should not be pixel-identical. When real
@@ -140,9 +155,13 @@ class SpriteLibrary:
             return {}
         return json.loads(path.read_text(encoding="utf-8")).get("sprites", {})
 
-    def _build_index(self) -> dict[str, dict[int, dict[int, dict[int, Path]]]]:
-        """type -> level -> direction -> frame -> path, from whatever is on disk."""
-        index: dict[str, dict[int, dict[int, dict[int, Path]]]] = {}
+    def _build_index(self) -> dict[str, dict[int, dict[tuple[int, int], dict[int, Path]]]]:
+        """type -> level -> (direction, connections) -> frame -> path.
+
+        Direction and connections never both apply: nothing in Clash both rotates and
+        autotiles. Keying on the pair keeps one index for both instead of two.
+        """
+        index: dict[str, dict[int, dict[tuple[int, int], dict[int, Path]]]] = {}
         if not self.dir.exists():
             return index
         for path in sorted(self.dir.rglob("*.png")):
@@ -151,15 +170,19 @@ class SpriteLibrary:
                 log.debug("ignoring unrecognised sprite filename: %s", path.name)
                 continue
             level = int(m.group("level"))
-            direction = int(m.group("dir") or 0)
+            variant = (int(m.group("dir") or 0), int(m.group("conn") or 0))
             frame = int(m.group("frame") or 0)
-            index.setdefault(m.group("type"), {}).setdefault(level, {}).setdefault(direction, {})[frame] = path
+            index.setdefault(m.group("type"), {}).setdefault(level, {}).setdefault(variant, {})[frame] = path
         return index
 
     def coverage(self) -> dict[str, int]:
         """Sprite files present per type -- useful for reporting real-art coverage."""
         return {t: sum(len(f) for d in lv.values() for f in d.values())
                 for t, lv in self._index.items()}
+
+    def connection_coverage(self, type_id: str) -> set[int]:
+        """Which wall connection variants exist for a type."""
+        return {conn for lv in self._index.get(type_id, {}).values() for _, conn in lv}
 
     def frame_counts(self) -> dict[str, int]:
         """Most animation frames available for any one level/direction, per type."""
@@ -186,8 +209,8 @@ class SpriteLibrary:
             missing = []
             for d in range(bdef.directions):
                 for level in sorted(self._index[bdef.id]):
-                    by_dir = self._index[bdef.id][level]
-                    if d not in by_dir and self._mirror_partner(bdef.id, d) not in by_dir:
+                    variants = self._index[bdef.id][level]
+                    if (d, 0) not in variants and (self._mirror_partner(bdef.id, d), 0) not in variants:
                         missing.append((level, d))
                         break
             if missing:
@@ -196,19 +219,20 @@ class SpriteLibrary:
 
     # ---- resolution ------------------------------------------------------
 
-    def get(self, bdef: BuildingDef, level: int, direction: int, frame: int = 0) -> Sprite:
+    def get(self, bdef: BuildingDef, level: int, direction: int, frame: int = 0,
+            connections: int = 0) -> Sprite:
         """Resolve a sprite. `frame` selects an animation frame when real ones exist,
         and always drives a subtle per-instance variation so identical buildings in
         one base are not pixel-identical copies."""
         bucket = frame % AUG_BUCKETS
-        key = (bdef.id, level, direction, frame, self.tile_w)
+        key = (bdef.id, level, direction, frame, connections, self.tile_w)
         if key not in self._cache:
-            self._cache[key] = self._resolve(bdef, level, direction, frame, bucket)
+            self._cache[key] = self._resolve(bdef, level, direction, frame, bucket, connections)
         return self._cache[key]
 
     def _resolve(self, bdef: BuildingDef, level: int, direction: int,
-                 frame: int, bucket: int) -> Sprite:
-        found = self._lookup(bdef.id, level, direction, frame)
+                 frame: int, bucket: int, connections: int = 0) -> Sprite:
+        found = self._lookup(bdef.id, level, direction, frame, connections)
         if found is None:
             return self._placeholder(bdef, level, direction)
         path, mirrored = found
@@ -249,23 +273,26 @@ class SpriteLibrary:
         anchor = (round(ax * size[0] / img.width), round(ay * size[1] / img.height))
         return img.resize(size, Image.Resampling.LANCZOS), anchor
 
-    def _lookup(self, type_id: str, level: int, direction: int, frame: int) -> tuple[Path, bool] | None:
+    def _lookup(self, type_id: str, level: int, direction: int, frame: int,
+                connections: int = 0) -> tuple[Path, bool] | None:
         """Find the best sprite file, returning (path, needs_mirroring)."""
         by_level = self._index.get(type_id)
         if not by_level:
             return None
         # Level axis: highest available at or below the requested level.
         usable = [lv for lv in by_level if lv <= level] or [min(by_level)]
-        by_dir = by_level[max(usable)]
+        variants = by_level[max(usable)]
 
-        if direction in by_dir:
-            return self._pick_frame(by_dir[direction], frame), False
-        mirror = self._mirror_partner(type_id, direction)
-        if mirror is not None and mirror in by_dir:
-            return self._pick_frame(by_dir[mirror], frame), True
-        if 0 in by_dir:
-            return self._pick_frame(by_dir[0], frame), False
-        return self._pick_frame(next(iter(by_dir.values())), frame), False
+        for conn in (connections, *CONNECT_FALLBACK.get(connections, (0,))):
+            if (direction, conn) in variants:
+                return self._pick_frame(variants[(direction, conn)], frame), False
+            mirror = self._mirror_partner(type_id, direction)
+            if mirror is not None and (mirror, conn) in variants:
+                return self._pick_frame(variants[(mirror, conn)], frame), True
+            if (0, conn) in variants:
+                return self._pick_frame(variants[(0, conn)], frame), False
+
+        return self._pick_frame(next(iter(variants.values())), frame), False
 
     @staticmethod
     def _pick_frame(frames: dict[int, Path], frame: int) -> Path:

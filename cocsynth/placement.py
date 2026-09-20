@@ -14,10 +14,12 @@ overlap check and as a debugging view of the base.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from random import Random
 
 import numpy as np
+
+from .schema import CONNECT_E, CONNECT_N, CONNECT_S, CONNECT_W
 
 from .catalog import BuildingDef, Catalog
 
@@ -46,6 +48,7 @@ class Placement:
     direction: int
     directions: int
     frame: int = 0
+    connections: int = 0
 
     @property
     def area(self) -> int:
@@ -122,8 +125,36 @@ class Placer:
         for bdef in walls:
             next_id = self._place_walls(bdef, th, occ, placements, next_id, rng, shortfall)
 
+        placements = self._link_walls(placements)
         self._check_shortfall(th, placements, shortfall)
         return PlacementResult(th, placements, occ, shortfall)
+
+    @staticmethod
+    def _link_walls(placements: list[Placement]) -> list[Placement]:
+        """Work out which walls touch, so each can render its connection variant.
+
+        Clash walls autotile: a segment in a straight run is a continuous bar, a
+        corner turns, an endpoint caps off. Rendering every wall as the same isolated
+        post turns a wall into a row of fence stakes, which is exactly what it looks
+        like. The mask is computed once here, from final positions.
+        """
+        wall_tiles = {p.tile for p in placements if p.type_id == "wall"}
+        if not wall_tiles:
+            return placements
+
+        out = []
+        for p in placements:
+            if p.type_id != "wall":
+                out.append(p)
+                continue
+            x, y = p.tile
+            mask = 0
+            for bit, (dx, dy) in ((CONNECT_N, (0, -1)), (CONNECT_E, (1, 0)),
+                                  (CONNECT_S, (0, 1)), (CONNECT_W, (-1, 0))):
+                if (x + dx, y + dy) in wall_tiles:
+                    mask |= bit
+            out.append(replace(p, connections=mask))
+        return out
 
     # ---- roster expansion ------------------------------------------------
 

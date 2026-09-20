@@ -136,3 +136,36 @@ def test_rotation_does_not_change_the_footprint(placer, catalog):
     for result in _bases(placer, 9, n=10):
         for p in result.placements:
             assert p.footprint == catalog[p.type_id].footprint
+
+
+def test_wall_connection_masks_match_neighbours(placer, catalog):
+    """Each wall's mask must name exactly the sides that have a wall next to them."""
+    from cocsynth.schema import CONNECT_E, CONNECT_N, CONNECT_S, CONNECT_W
+
+    result = placer.generate(9, Random(21))
+    tiles = {p.tile for p in result.placements if p.type_id == "wall"}
+    for p in result.placements:
+        if p.type_id != "wall":
+            continue
+        x, y = p.tile
+        expected = 0
+        for bit, (dx, dy) in ((CONNECT_N, (0, -1)), (CONNECT_E, (1, 0)),
+                              (CONNECT_S, (0, 1)), (CONNECT_W, (-1, 0))):
+            if (x + dx, y + dy) in tiles:
+                expected |= bit
+        assert p.connections == expected, f"wall at {p.tile}: {p.connections} != {expected}"
+
+
+def test_non_walls_have_no_connections(placer, catalog):
+    for p in placer.generate(9, Random(22)).placements:
+        if p.type_id != "wall":
+            assert p.connections == 0
+
+
+def test_long_wall_runs_are_detected(placer):
+    """Perimeters should mostly be straight runs, not isolated posts -- if nearly
+    everything came back as mask 0 the wall router is scattering, not building."""
+    result = placer.generate(9, Random(23))
+    masks = [p.connections for p in result.placements if p.type_id == "wall"]
+    straight = sum(1 for m in masks if m in (5, 10))
+    assert straight > len(masks) * 0.5, f"only {straight}/{len(masks)} walls are in runs"

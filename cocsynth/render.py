@@ -95,7 +95,7 @@ class Renderer:
         order = sorted(placements, key=lambda q: proj.depth(*q.tile, *q.footprint))
         resolved = []
         for p in order:
-            sprite = self.lib.get(self.cat[p.type_id], p.level, p.direction, p.frame)
+            sprite = self.lib.get(self.cat[p.type_id], p.level, p.direction, p.frame, p.connections)
             ax, ay = proj.anchor(*p.tile, *p.footprint)
             resolved.append((p, sprite, ax - sprite.anchor[0], ay - sprite.anchor[1], ay))
 

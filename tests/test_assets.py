@@ -137,3 +137,42 @@ def test_variation_keeps_the_anchor_proportional(tmp_path, catalog):
         # Anchor stays at the bottom-centre of whatever size the sprite became.
         assert abs(ax - s.image.width // 2) <= 1
         assert s.image.height - ay <= 2
+
+
+# ---- wall autotiling -------------------------------------------------------
+
+def _walls(root, level=10, masks=(0,)):
+    d = root / "wall"
+    d.mkdir(parents=True, exist_ok=True)
+    for mask in masks:
+        suffix = f"_c{mask}" if mask else ""
+        make_sprite("wall", "wall", (1, 1), level, 32)[0].save(d / f"wall_lvl{level:02d}{suffix}.png")
+    return root
+
+
+def test_exact_connection_variant_is_used(tmp_path, catalog):
+    lib = SpriteLibrary(_walls(tmp_path, masks=(0, 5, 10, 3)), tile_w=32)
+    assert lib.get(catalog["wall"], 10, 0, 0, connections=5).name == "wall_lvl10_c5.png"
+    assert lib.get(catalog["wall"], 10, 0, 0, connections=10).name == "wall_lvl10_c10.png"
+    assert lib.get(catalog["wall"], 10, 0, 0, connections=3).name == "wall_lvl10_c3.png"
+
+
+def test_missing_variant_falls_back_along_its_own_axis(tmp_path, catalog):
+    """A T-junction with no art should use the straight run through it, not the
+    isolated post -- that is the difference between a wall and a row of stakes."""
+    lib = SpriteLibrary(_walls(tmp_path, masks=(0, 5, 10)), tile_w=32)
+    assert lib.get(catalog["wall"], 10, 0, 0, connections=7).name == "wall_lvl10_c5.png"
+    assert lib.get(catalog["wall"], 10, 0, 0, connections=14).name == "wall_lvl10_c10.png"
+    assert lib.get(catalog["wall"], 10, 0, 0, connections=1).name == "wall_lvl10_c5.png"
+
+
+def test_everything_falls_back_to_the_post_when_nothing_else_exists(tmp_path, catalog):
+    lib = SpriteLibrary(_walls(tmp_path, masks=(0,)), tile_w=32)
+    for mask in range(16):
+        assert lib.get(catalog["wall"], 10, 0, 0, connections=mask).name == "wall_lvl10.png"
+
+
+def test_connection_coverage_reports_what_exists(tmp_path, catalog):
+    lib = SpriteLibrary(_walls(tmp_path, masks=(0, 5, 10, 3, 12)), tile_w=32)
+    assert lib.connection_coverage("wall") == {0, 5, 10, 3, 12}
+    assert SpriteLibrary(_walls(tmp_path / "b", masks=(0,)), tile_w=32).connection_coverage("wall") == {0}

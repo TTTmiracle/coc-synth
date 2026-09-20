@@ -118,6 +118,20 @@ def main(argv: list[str] | None = None) -> int:
     # A directional type with partial art renders the wrong facing while the label
     # still claims the right one. Surface it before generating thousands of images.
     probe = SpriteLibrary(args.sprites, tile_w=args.tile_w) if args.sprites else SpriteLibrary(tile_w=args.tile_w)
+    # Walls are ~71% of every base, so a wall that renders as an isolated post
+    # instead of a connected run is the most-repeated error in the whole dataset.
+    for type_id, bdef in catalog.buildings.items():
+        if bdef.category != "wall" or type_id not in probe.coverage():
+            continue
+        have = probe.connection_coverage(type_id)
+        if have <= {0}:
+            log.warning(
+                "WARNING: %s has only the isolated-post sprite. Runs will render as "
+                "separate posts, not a connected wall. Add _c5 (vertical run), _c10 "
+                "(horizontal run) and the four corners _c3/_c6/_c9/_c12 to fix it.",
+                type_id,
+            )
+
     for type_id, missing in probe.directional_gaps(catalog).items():
         log.warning("WARNING: %s has art but is missing facings %s; those will render as "
                     "another direction while the label still says otherwise. Add the "

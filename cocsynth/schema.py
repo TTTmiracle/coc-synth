@@ -16,6 +16,10 @@ SCHEMA_VERSION = "1.0"
 HEADINGS: tuple[str, ...] = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
 
 
+#: Wall autotile bits, in grid space. A wall's mask is the OR of the sides that
+#: have another wall next to them, which is what decides its connection variant.
+CONNECT_N, CONNECT_E, CONNECT_S, CONNECT_W = 1, 2, 4, 8
+
 #: Grid-space unit vector per heading, in the same clockwise order as HEADINGS.
 #: Grid north is -y, east is +x; the renderer projects these into screen space.
 HEADING_VECTORS: tuple[tuple[int, int], ...] = (
@@ -78,6 +82,10 @@ class BuildingLabel(BaseModel):
 
     direction: int = Field(default=0, ge=0, description="Facing index; 0 for fixed buildings")
     frame: int = Field(default=0, ge=0, description="Animation frame drawn for this instance")
+    connections: int = Field(
+        default=0, ge=0, le=15,
+        description="Wall autotile mask: N=1 E=2 S=4 W=8, OR-ed for each neighbouring wall",
+    )
     heading: str = Field(default="N", description="Compass form of `direction`")
     rotation_deg: int = Field(default=0, ge=0, lt=360)
 
