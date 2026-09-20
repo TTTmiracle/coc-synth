@@ -28,10 +28,18 @@ def test_box_and_footprint_agree(sample_label):
     """An anchor bug moves the sprite off its tile while the JSON stays consistent.
 
     The two label fields are measured independently -- the box from rendered alpha,
-    the polygon from the projection -- so requiring them to overlap catches it.
+    the polygon from the projection -- so requiring them to line up catches it.
+
+    Only unoccluded instances qualify. When a nearer building hides most of a wall,
+    the few visible pixels are its roof, which genuinely sits *above* its own
+    footprint; that is correct output, not a misplaced sprite.
     """
     label, _, _ = sample_label
+    checked = 0
     for b in label.buildings:
+        if b.visibility < 0.95:
+            continue
+        checked += 1
         bx, by, bw, bh = b.bbox_px
         xs = [p[0] for p in b.footprint_polygon_px]
         ys = [p[1] for p in b.footprint_polygon_px]
@@ -39,6 +47,24 @@ def test_box_and_footprint_agree(sample_label):
         assert by < max(ys) and by + bh > min(ys), f"{b.type} box and footprint miss vertically"
         # A sprite standing on its footprint is horizontally centred over it.
         assert min(xs) <= bx + bw / 2 <= max(xs), f"{b.type} is not centred on its tile"
+    assert checked > 20, f"only {checked} unoccluded instances -- test is not proving much"
+
+
+def test_occluded_boxes_still_sit_within_the_sprite_column(sample_label):
+    """Partly hidden buildings get a looser but still meaningful check: whatever is
+    visible must fall inside the horizontal span the whole sprite could occupy."""
+    label, _, _ = sample_label
+    iw, _ = label.image_size
+    for b in label.buildings:
+        if b.visibility >= 0.95:
+            continue
+        bx, by, bw, bh = b.bbox_px
+        xs = [p[0] for p in b.footprint_polygon_px]
+        span = max(xs) - min(xs)
+        # Allow a full footprint width of overhang either side for tall art.
+        assert bx + bw > min(xs) - span and bx < max(xs) + span, \
+            f"{b.type} visible pixels are nowhere near its tile"
+        assert 0 <= bx and bx + bw <= iw
 
 
 def test_visibility_is_a_sane_fraction(sample_label):

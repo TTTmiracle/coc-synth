@@ -184,8 +184,9 @@ class Placer:
         if self.layout_style == "scatter":
             return rng.randint(0, hi_x), rng.randint(0, hi_y)
         if self.layout_style in ("clustered", "compartment"):
-            # Compact, centre-weighted -- real bases huddle rather than spread.
-            sigma = self.tiles / (7.0 if self.layout_style == "compartment" else 5.5)
+            # Centre-weighted but spread across the walled area. Too tight and every
+            # base becomes one dense clump in the middle, which no real layout is.
+            sigma = self.tiles / (5.5 if self.layout_style == "compartment" else 4.0)
             c = self.tiles / 2
             tx = int(round(rng.gauss(c - w / 2, sigma)))
             ty = int(round(rng.gauss(c - h / 2, sigma)))

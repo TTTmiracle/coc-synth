@@ -188,8 +188,37 @@ class SpriteLibrary:
         anchor = self._anchor_for(path, img, mirrored)
         if mirrored:
             img = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        img, anchor = self._fit_to_footprint(bdef, img, anchor)
         img, anchor = _vary(img, anchor, bucket)
         return Sprite(img, anchor, path.name + (" (mirrored)" if mirrored else ""))
+
+    def _fit_to_footprint(
+        self, bdef: BuildingDef, img: Image.Image, anchor: tuple[int, int]
+    ) -> tuple[Image.Image, tuple[int, int]]:
+        """Scale a sprite so it sits correctly on its tile footprint.
+
+        Published art is rendered at its own resolution, which has nothing to do with
+        our tile size -- dropped in raw, a 3x3 Cannon can be five times too wide and
+        the base turns into a pile. Matching the sprite's width to the footprint
+        diamond's width `(w + h) * tile_w / 2` puts every building back on its tiles.
+
+        Width rather than height, because a building is drawn taller than its
+        footprint (that is the whole point of an isometric sprite) while its width
+        does correspond to the diamond it stands on.
+
+        `scale` in the manifest tweaks a type whose art has unusual padding.
+        """
+        w, h = bdef.footprint
+        target = (w + h) * self.tile_w / 2
+        target *= float(self.manifest.get(bdef.id, {}).get("scale", 1.0))
+        if img.width == 0 or abs(img.width - target) < 1:
+            return img, anchor
+
+        factor = target / img.width
+        size = (max(1, round(img.width * factor)), max(1, round(img.height * factor)))
+        ax, ay = anchor
+        anchor = (round(ax * size[0] / img.width), round(ay * size[1] / img.height))
+        return img.resize(size, Image.Resampling.LANCZOS), anchor
 
     def _lookup(self, type_id: str, level: int, direction: int, frame: int) -> tuple[Path, bool] | None:
         """Find the best sprite file, returning (path, needs_mirroring)."""

@@ -1,0 +1,932 @@
+{
+ "sprites": {
+  "air_bomb": {
+   "anchors": {
+    "air_bomb_lvl01.png": [
+     50,
+     137
+    ],
+    "air_bomb_lvl03.png": [
+     50,
+     137
+    ]
+   }
+  },
+  "air_defense": {
+   "anchors": {
+    "air_defense_lvl01.png": [
+     43,
+     116
+    ],
+    "air_defense_lvl02.png": [
+     46,
+     118
+    ],
+    "air_defense_lvl03.png": [
+     46,
+     124
+    ],
+    "air_defense_lvl04.png": [
+     54,
+     135
+    ],
+    "air_defense_lvl05.png": [
+     58,
+     135
+    ],
+    "air_defense_lvl06.png": [
+     59,
+     148
+    ],
+    "air_defense_lvl07.png": [
+     78,
+     185
+    ]
+   }
+  },
+  "air_sweeper": {
+   "anchors": {
+    "air_sweeper_lvl01.png": [
+     66,
+     143
+    ],
+    "air_sweeper_lvl02.png": [
+     66,
+     145
+    ],
+    "air_sweeper_lvl03.png": [
+     66,
+     145
+    ],
+    "air_sweeper_lvl04.png": [
+     67,
+     146
+    ],
+    "air_sweeper_lvl05.png": [
+     71,
+     151
+    ]
+   }
+  },
+  "archer_tower": {
+   "anchors": {
+    "archer_tower_lvl01.png": [
+     62,
+     173
+    ],
+    "archer_tower_lvl02.png": [
+     68,
+     181
+    ],
+    "archer_tower_lvl03.png": [
+     67,
+     182
+    ],
+    "archer_tower_lvl04.png": [
+     70,
+     186
+    ],
+    "archer_tower_lvl05.png": [
+     68,
+     182
+    ],
+    "archer_tower_lvl06.png": [
+     71,
+     198
+    ],
+    "archer_tower_lvl07.png": [
+     71,
+     198
+    ],
+    "archer_tower_lvl08.png": [
+     74,
+     202
+    ],
+    "archer_tower_lvl09.png": [
+     86,
+     209
+    ],
+    "archer_tower_lvl10.png": [
+     86,
+     210
+    ],
+    "archer_tower_lvl11.png": [
+     82,
+     224
+    ]
+   }
+  },
+  "army_camp": {
+   "anchors": {
+    "army_camp_lvl01.png": [
+     55,
+     87
+    ],
+    "army_camp_lvl02.png": [
+     62,
+     106
+    ],
+    "army_camp_lvl03.png": [
+     62,
+     112
+    ],
+    "army_camp_lvl04.png": [
+     62,
+     106
+    ],
+    "army_camp_lvl05.png": [
+     62,
+     106
+    ],
+    "army_camp_lvl06.png": [
+     62,
+     106
+    ],
+    "army_camp_lvl07.png": [
+     77,
+     128
+    ]
+   }
+  },
+  "barracks": {
+   "anchors": {
+    "barracks_lvl01.png": [
+     72,
+     164
+    ],
+    "barracks_lvl02.png": [
+     90,
+     171
+    ],
+    "barracks_lvl03.png": [
+     87,
+     163
+    ],
+    "barracks_lvl04.png": [
+     90,
+     164
+    ],
+    "barracks_lvl05.png": [
+     92,
+     185
+    ],
+    "barracks_lvl06.png": [
+     99,
+     180
+    ],
+    "barracks_lvl07.png": [
+     94,
+     180
+    ],
+    "barracks_lvl08.png": [
+     85,
+     177
+    ],
+    "barracks_lvl09.png": [
+     85,
+     169
+    ],
+    "barracks_lvl10.png": [
+     93,
+     199
+    ],
+    "barracks_lvl11.png": [
+     98,
+     184
+    ]
+   }
+  },
+  "blacksmith": {
+   "anchors": {
+    "blacksmith_lvl01.png": [
+     84,
+     190
+    ]
+   }
+  },
+  "bomb": {
+   "anchors": {
+    "bomb_lvl01.png": [
+     21,
+     58
+    ],
+    "bomb_lvl03.png": [
+     28,
+     68
+    ],
+    "bomb_lvl05.png": [
+     28,
+     68
+    ]
+   }
+  },
+  "bomb_tower": {
+   "anchors": {
+    "bomb_tower_lvl01.png": [
+     72,
+     171
+    ],
+    "bomb_tower_lvl02.png": [
+     73,
+     172
+    ],
+    "bomb_tower_lvl03.png": [
+     74,
+     178
+    ]
+   }
+  },
+  "builders_hut": {
+   "anchors": {
+    "builders_hut_lvl01.png": [
+     50,
+     127
+    ]
+   }
+  },
+  "cannon": {
+   "anchors": {
+    "cannon_lvl01.png": [
+     35,
+     70
+    ],
+    "cannon_lvl02.png": [
+     49,
+     87
+    ],
+    "cannon_lvl03.png": [
+     53,
+     100
+    ],
+    "cannon_lvl04.png": [
+     61,
+     109
+    ],
+    "cannon_lvl05.png": [
+     61,
+     114
+    ],
+    "cannon_lvl06.png": [
+     67,
+     117
+    ],
+    "cannon_lvl07.png": [
+     67,
+     117
+    ],
+    "cannon_lvl08.png": [
+     67,
+     116
+    ],
+    "cannon_lvl09.png": [
+     81,
+     130
+    ],
+    "cannon_lvl10.png": [
+     81,
+     136
+    ],
+    "cannon_lvl11.png": [
+     90,
+     144
+    ]
+   }
+  },
+  "clan_castle": {
+   "anchors": {
+    "clan_castle_lvl01.png": [
+     96,
+     191
+    ],
+    "clan_castle_lvl02.png": [
+     94,
+     224
+    ],
+    "clan_castle_lvl03.png": [
+     104,
+     244
+    ],
+    "clan_castle_lvl04.png": [
+     97,
+     237
+    ],
+    "clan_castle_lvl05.png": [
+     100,
+     242
+    ]
+   }
+  },
+  "dark_barracks": {
+   "anchors": {
+    "dark_barracks_lvl01.png": [
+     94,
+     175
+    ],
+    "dark_barracks_lvl02.png": [
+     106,
+     198
+    ],
+    "dark_barracks_lvl03.png": [
+     112,
+     211
+    ],
+    "dark_barracks_lvl04.png": [
+     99,
+     228
+    ],
+    "dark_barracks_lvl05.png": [
+     106,
+     222
+    ],
+    "dark_barracks_lvl06.png": [
+     99,
+     224
+    ]
+   }
+  },
+  "dark_elixir_drill": {
+   "anchors": {
+    "dark_elixir_drill_lvl01.png": [
+     67,
+     168
+    ],
+    "dark_elixir_drill_lvl02.png": [
+     66,
+     168
+    ],
+    "dark_elixir_drill_lvl03.png": [
+     66,
+     167
+    ],
+    "dark_elixir_drill_lvl04.png": [
+     66,
+     168
+    ],
+    "dark_elixir_drill_lvl05.png": [
+     79,
+     193
+    ],
+    "dark_elixir_drill_lvl06.png": [
+     81,
+     192
+    ]
+   }
+  },
+  "dark_elixir_storage": {
+   "anchors": {
+    "dark_elixir_storage_lvl01.png": [
+     70,
+     148
+    ],
+    "dark_elixir_storage_lvl02.png": [
+     71,
+     154
+    ],
+    "dark_elixir_storage_lvl03.png": [
+     96,
+     211
+    ],
+    "dark_elixir_storage_lvl04.png": [
+     97,
+     211
+    ],
+    "dark_elixir_storage_lvl05.png": [
+     100,
+     213
+    ],
+    "dark_elixir_storage_lvl06.png": [
+     94,
+     212
+    ]
+   }
+  },
+  "dark_spell_factory": {
+   "anchors": {
+    "dark_spell_factory_lvl01.png": [
+     74,
+     133
+    ],
+    "dark_spell_factory_lvl02.png": [
+     74,
+     132
+    ],
+    "dark_spell_factory_lvl03.png": [
+     87,
+     138
+    ],
+    "dark_spell_factory_lvl04.png": [
+     91,
+     142
+    ]
+   }
+  },
+  "elixir_collector": {
+   "anchors": {
+    "elixir_collector_lvl01.png": [
+     62,
+     141
+    ],
+    "elixir_collector_lvl02.png": [
+     62,
+     134
+    ],
+    "elixir_collector_lvl03.png": [
+     62,
+     140
+    ],
+    "elixir_collector_lvl04.png": [
+     63,
+     142
+    ],
+    "elixir_collector_lvl05.png": [
+     74,
+     163
+    ],
+    "elixir_collector_lvl06.png": [
+     82,
+     164
+    ],
+    "elixir_collector_lvl07.png": [
+     82,
+     183
+    ],
+    "elixir_collector_lvl08.png": [
+     77,
+     163
+    ],
+    "elixir_collector_lvl09.png": [
+     77,
+     182
+    ],
+    "elixir_collector_lvl10.png": [
+     79,
+     189
+    ],
+    "elixir_collector_lvl11.png": [
+     80,
+     191
+    ],
+    "elixir_collector_lvl12.png": [
+     83,
+     198
+    ]
+   }
+  },
+  "elixir_storage": {
+   "anchors": {
+    "elixir_storage_lvl01.png": [
+     32,
+     65
+    ],
+    "elixir_storage_lvl02.png": [
+     65,
+     67
+    ],
+    "elixir_storage_lvl03.png": [
+     61,
+     105
+    ],
+    "elixir_storage_lvl04.png": [
+     65,
+     115
+    ],
+    "elixir_storage_lvl05.png": [
+     59,
+     127
+    ],
+    "elixir_storage_lvl06.png": [
+     71,
+     151
+    ],
+    "elixir_storage_lvl07.png": [
+     68,
+     158
+    ],
+    "elixir_storage_lvl08.png": [
+     74,
+     171
+    ],
+    "elixir_storage_lvl09.png": [
+     80,
+     197
+    ],
+    "elixir_storage_lvl10.png": [
+     108,
+     225
+    ],
+    "elixir_storage_lvl11.png": [
+     108,
+     225
+    ]
+   }
+  },
+  "giant_bomb": {
+   "anchors": {
+    "giant_bomb_lvl01.png": [
+     51,
+     88
+    ],
+    "giant_bomb_lvl03.png": [
+     51,
+     88
+    ]
+   }
+  },
+  "gold_mine": {
+   "anchors": {
+    "gold_mine_lvl01.png": [
+     87,
+     112
+    ],
+    "gold_mine_lvl02.png": [
+     87,
+     111
+    ],
+    "gold_mine_lvl03.png": [
+     87,
+     112
+    ],
+    "gold_mine_lvl04.png": [
+     90,
+     115
+    ],
+    "gold_mine_lvl05.png": [
+     88,
+     113
+    ],
+    "gold_mine_lvl06.png": [
+     88,
+     115
+    ],
+    "gold_mine_lvl07.png": [
+     89,
+     112
+    ],
+    "gold_mine_lvl08.png": [
+     89,
+     123
+    ],
+    "gold_mine_lvl09.png": [
+     85,
+     125
+    ],
+    "gold_mine_lvl10.png": [
+     94,
+     143
+    ],
+    "gold_mine_lvl11.png": [
+     94,
+     150
+    ],
+    "gold_mine_lvl12.png": [
+     94,
+     161
+    ]
+   }
+  },
+  "gold_storage": {
+   "anchors": {
+    "gold_storage_lvl01.png": [
+     84,
+     138
+    ],
+    "gold_storage_lvl02.png": [
+     88,
+     154
+    ],
+    "gold_storage_lvl03.png": [
+     91,
+     166
+    ],
+    "gold_storage_lvl04.png": [
+     92,
+     173
+    ],
+    "gold_storage_lvl05.png": [
+     91,
+     176
+    ],
+    "gold_storage_lvl06.png": [
+     91,
+     180
+    ],
+    "gold_storage_lvl07.png": [
+     103,
+     193
+    ],
+    "gold_storage_lvl08.png": [
+     109,
+     202
+    ],
+    "gold_storage_lvl09.png": [
+     104,
+     202
+    ],
+    "gold_storage_lvl10.png": [
+     106,
+     211
+    ],
+    "gold_storage_lvl11.png": [
+     106,
+     229
+    ]
+   }
+  },
+  "hero_hall": {
+   "anchors": {
+    "hero_hall_lvl01.png": [
+     175,
+     331
+    ],
+    "hero_hall_lvl02.png": [
+     175,
+     331
+    ],
+    "hero_hall_lvl03.png": [
+     180,
+     331
+    ]
+   }
+  },
+  "hidden_tesla": {
+   "anchors": {
+    "hidden_tesla_lvl01.png": [
+     52,
+     157
+    ],
+    "hidden_tesla_lvl02.png": [
+     52,
+     157
+    ],
+    "hidden_tesla_lvl03.png": [
+     52,
+     157
+    ],
+    "hidden_tesla_lvl04.png": [
+     52,
+     157
+    ],
+    "hidden_tesla_lvl05.png": [
+     52,
+     157
+    ],
+    "hidden_tesla_lvl06.png": [
+     52,
+     157
+    ],
+    "hidden_tesla_lvl07.png": [
+     52,
+     174
+    ]
+   }
+  },
+  "laboratory": {
+   "anchors": {
+    "laboratory_lvl01.png": [
+     80,
+     143
+    ],
+    "laboratory_lvl02.png": [
+     84,
+     150
+    ],
+    "laboratory_lvl03.png": [
+     84,
+     150
+    ],
+    "laboratory_lvl04.png": [
+     84,
+     151
+    ],
+    "laboratory_lvl05.png": [
+     87,
+     162
+    ],
+    "laboratory_lvl06.png": [
+     87,
+     200
+    ],
+    "laboratory_lvl07.png": [
+     98,
+     163
+    ]
+   }
+  },
+  "mortar": {
+   "anchors": {
+    "mortar_lvl01.png": [
+     38,
+     84
+    ],
+    "mortar_lvl02.png": [
+     40,
+     88
+    ],
+    "mortar_lvl03.png": [
+     52,
+     105
+    ],
+    "mortar_lvl04.png": [
+     52,
+     107
+    ],
+    "mortar_lvl05.png": [
+     52,
+     108
+    ],
+    "mortar_lvl06.png": [
+     52,
+     108
+    ],
+    "mortar_lvl07.png": [
+     54,
+     118
+    ]
+   }
+  },
+  "seeking_air_mine": {
+   "anchors": {
+    "seeking_air_mine_lvl01.png": [
+     46,
+     146
+    ]
+   }
+  },
+  "skeleton_trap": {
+   "anchors": {
+    "skeleton_trap_lvl01.png": [
+     37,
+     95
+    ],
+    "skeleton_trap_lvl03.png": [
+     37,
+     95
+    ]
+   }
+  },
+  "spell_factory": {
+   "anchors": {
+    "spell_factory_lvl01.png": [
+     79,
+     166
+    ],
+    "spell_factory_lvl02.png": [
+     79,
+     174
+    ],
+    "spell_factory_lvl03.png": [
+     79,
+     174
+    ],
+    "spell_factory_lvl04.png": [
+     109,
+     207
+    ]
+   }
+  },
+  "spring_trap": {
+   "anchors": {
+    "spring_trap_lvl01.png": [
+     43,
+     76
+    ],
+    "spring_trap_lvl03.png": [
+     42,
+     76
+    ]
+   }
+  },
+  "town_hall": {
+   "anchors": {
+    "town_hall_lvl01.png": [
+     396,
+     690
+    ],
+    "town_hall_lvl02.png": [
+     395,
+     723
+    ],
+    "town_hall_lvl03.png": [
+     395,
+     782
+    ],
+    "town_hall_lvl04.png": [
+     395,
+     850
+    ],
+    "town_hall_lvl05.png": [
+     398,
+     850
+    ],
+    "town_hall_lvl06.png": [
+     398,
+     860
+    ],
+    "town_hall_lvl07.png": [
+     398,
+     880
+    ],
+    "town_hall_lvl08.png": [
+     398,
+     920
+    ],
+    "town_hall_lvl09.png": [
+     409,
+     915
+    ]
+   }
+  },
+  "wall": {
+   "anchors": {
+    "wall_lvl01.png": [
+     31,
+     81
+    ],
+    "wall_lvl02.png": [
+     32,
+     73
+    ],
+    "wall_lvl03.png": [
+     36,
+     81
+    ],
+    "wall_lvl04.png": [
+     37,
+     97
+    ],
+    "wall_lvl05.png": [
+     43,
+     92
+    ],
+    "wall_lvl06.png": [
+     29,
+     81
+    ],
+    "wall_lvl07.png": [
+     31,
+     100
+    ],
+    "wall_lvl08.png": [
+     33,
+     95
+    ],
+    "wall_lvl09.png": [
+     38,
+     96
+    ],
+    "wall_lvl10.png": [
+     35,
+     90
+    ]
+   }
+  },
+  "wizard_tower": {
+   "anchors": {
+    "wizard_tower_lvl01.png": [
+     75,
+     170
+    ],
+    "wizard_tower_lvl02.png": [
+     75,
+     170
+    ],
+    "wizard_tower_lvl03.png": [
+     76,
+     170
+    ],
+    "wizard_tower_lvl04.png": [
+     81,
+     170
+    ],
+    "wizard_tower_lvl05.png": [
+     75,
+     170
+    ],
+    "wizard_tower_lvl06.png": [
+     81,
+     170
+    ],
+    "wizard_tower_lvl07.png": [
+     83,
+     179
+    ]
+   }
+  },
+  "x_bow": {
+   "anchors": {
+    "x_bow_lvl01.png": [
+     88,
+     183
+    ],
+    "x_bow_lvl02.png": [
+     96,
+     190
+    ],
+    "x_bow_lvl03.png": [
+     102,
+     191
+    ]
+   }
+  }
+ }
+}
