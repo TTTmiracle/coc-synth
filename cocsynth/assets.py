@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageFilter
 
 from . import placeholders
 from .catalog import BuildingDef
@@ -48,17 +48,45 @@ AUG_BUCKETS = 8
 PLACEHOLDER_PREFIX = "placeholder:"
 
 
+#: Ground shadows: vertical squash, opacity, blur radius as a fraction of tile width.
+SHADOW_SQUASH = 0.42
+SHADOW_ALPHA = 132
+SHADOW_BLUR = 0.055
+
+
 @dataclass(frozen=True)
 class Sprite:
-    """A sprite ready to composite."""
+    """A sprite ready to composite, with its ground shadow."""
 
     image: Image.Image
     anchor: tuple[int, int]
     name: str
+    shadow: Image.Image | None = None
 
     @property
     def is_placeholder(self) -> bool:
         return self.name.startswith(PLACEHOLDER_PREFIX)
+
+
+def make_shadow(img: Image.Image, tile_w: int) -> Image.Image | None:
+    """Flatten a sprite's silhouette into a ground shadow.
+
+    Squashing the alpha vertically is what sells it: a shadow lies on the isometric
+    ground plane, so it is far shorter than the building casting it. Blurring softens
+    the edge the way the game's does.
+
+    Shadows are drawn to the canvas only, never to the instance-id mask -- otherwise
+    every bounding box would grow to include its own shadow.
+    """
+    alpha = img.getchannel("A")
+    h = max(1, int(alpha.height * SHADOW_SQUASH))
+    flat = alpha.resize((alpha.width, h), Image.Resampling.BILINEAR)
+    flat = flat.point(lambda v: min(SHADOW_ALPHA, v))
+    flat = flat.filter(ImageFilter.GaussianBlur(max(1.0, tile_w * SHADOW_BLUR)))
+
+    shadow = Image.new("RGBA", flat.size, (18, 32, 12, 0))
+    shadow.putalpha(flat)
+    return shadow
 
 
 def _vary(img: Image.Image, anchor: tuple[int, int], bucket: int) -> tuple[Image.Image, tuple[int, int]]:
@@ -190,7 +218,8 @@ class SpriteLibrary:
             img = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
         img, anchor = self._fit_to_footprint(bdef, img, anchor)
         img, anchor = _vary(img, anchor, bucket)
-        return Sprite(img, anchor, path.name + (" (mirrored)" if mirrored else ""))
+        name = path.name + (" (mirrored)" if mirrored else "")
+        return Sprite(img, anchor, name, make_shadow(img, self.tile_w))
 
     def _fit_to_footprint(
         self, bdef: BuildingDef, img: Image.Image, anchor: tuple[int, int]
@@ -287,4 +316,5 @@ class SpriteLibrary:
             tile_w=self.tile_w, direction=direction, directions=bdef.directions,
         )
         suffix = f"_dir{direction}" if bdef.is_directional else ""
-        return Sprite(img, anchor, f"{PLACEHOLDER_PREFIX}{bdef.id}_lvl{level:02d}{suffix}")
+        return Sprite(img, anchor, f"{PLACEHOLDER_PREFIX}{bdef.id}_lvl{level:02d}{suffix}",
+                      make_shadow(img, self.tile_w))

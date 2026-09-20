@@ -77,6 +77,10 @@ def build_parser() -> argparse.ArgumentParser:
                    help="drop instances occluded below this fraction")
     p.add_argument("--yolo-direction-mode", default="ignore", choices=("ignore", "split"),
                    help="'split' gives each facing its own YOLO class")
+    p.add_argument("--skip-missing-art", action="store_true",
+                   help="omit building types that have no real sprite, instead of "
+                        "drawing a placeholder block among real art")
+    p.add_argument("--no-shadows", action="store_true", help="disable ground shadows")
     p.add_argument("--sprites", type=Path, default=None, help="sprite directory override")
     p.add_argument("--config", type=Path, default=None, help="buildings.yaml override")
     p.add_argument("-q", "--quiet", action="store_true")
@@ -115,6 +119,12 @@ def main(argv: list[str] | None = None) -> int:
                     "another direction while the label still says otherwise. Add the "
                     "sprites, or a mirror_of entry in manifest.json.", type_id, missing)
 
+    with_art = set(probe.coverage())
+    if args.skip_missing_art:
+        dropped = sorted(set(catalog.type_names) - with_art)
+        if dropped:
+            log.info("skipping %d type(s) with no sprite: %s", len(dropped), ", ".join(dropped))
+
     indices = [args.only] if args.only is not None else list(range(args.n))
     started = time.perf_counter()
     total_boxes = 0
@@ -134,8 +144,12 @@ def main(argv: list[str] | None = None) -> int:
                 args.sprites, tile_w=tile_w) if args.sprites else SpriteLibrary(tile_w=tile_w)
 
         placement = placer.generate(th, rng)
+        if args.skip_missing_art:
+            placement.placements = [
+                q for q in placement.placements if q.type_id in with_art
+            ]
         renderer = Renderer(catalog, library, tile_w=tile_w, margin=args.margin,
-                            min_visibility=args.min_visibility)
+                            min_visibility=args.min_visibility, shadows=not args.no_shadows)
         rendered = renderer.render(placement.placements, rng, pan=pan)
 
         stem = f"th{th}_{i:06d}"

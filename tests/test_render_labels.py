@@ -141,3 +141,24 @@ def _fake_result(*placements):
     from cocsynth.placement import PlacementResult
     import numpy as np
     return PlacementResult(9, list(placements), np.zeros((44, 44), dtype=np.uint16))
+
+
+def test_shadows_never_enter_the_bounding_boxes(catalog, library):
+    """A shadow is not the building. If it reached the id mask every box would
+    swell to include it, so boxes must be identical with shadows on and off."""
+    from random import Random
+
+    from cocsynth.placement import Placement
+    from cocsynth.render import Renderer
+
+    ps = [Placement(1, "town_hall", 9, (20, 20), (4, 4), 0, 1, 0),
+          Placement(2, "cannon", 9, (26, 20), (3, 3), 0, 1, 0)]
+    lit = Renderer(catalog, library, tile_w=32, shadows=True).render(ps, Random(1))
+    dark = Renderer(catalog, library, tile_w=32, shadows=False).render(ps, Random(1))
+
+    assert {i: v.bbox_px for i, v in lit.instances.items()} == \
+           {i: v.bbox_px for i, v in dark.instances.items()}
+    assert {i: v.visibility for i, v in lit.instances.items()} == \
+           {i: v.visibility for i, v in dark.instances.items()}
+    # ...but the pixels must actually differ, or shadows are not being drawn at all.
+    assert lit.image.tobytes() != dark.image.tobytes()

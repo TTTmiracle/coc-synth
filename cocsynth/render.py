@@ -30,6 +30,11 @@ from .project import Projection
 #: Alpha at or below this counts as transparent when stamping the id mask.
 ALPHA_CUTOFF = 8
 
+#: Shadow placement, as fractions of tile width. The game lights from the upper
+#: left, so shadows fall slightly down and to the right of what casts them.
+SHADOW_DX = 0.10
+SHADOW_LIFT = 0.16
+
 
 @dataclass(frozen=True)
 class RenderedInstance:
@@ -61,6 +66,7 @@ class Renderer:
         headroom_tiles: float = 1.6,
         min_visibility: float = 0.05,
         margin: int = 24,
+        shadows: bool = True,
         background: tuple[int, int, int] = (94, 137, 68),
     ):
         self.cat = catalog
@@ -69,6 +75,7 @@ class Renderer:
         self.headroom_tiles = headroom_tiles
         self.min_visibility = min_visibility
         self.margin = margin
+        self.shadows = shadows
         self.background = background
 
     # ---- public ----------------------------------------------------------
@@ -85,12 +92,25 @@ class Renderer:
         rects: dict[int, tuple[int, int, int, int]] = {}
         meta: dict[int, tuple[str, list[tuple[int, int]]]] = {}
 
-        # Far to near: the painter's algorithm gives correct occlusion.
-        for p in sorted(placements, key=lambda q: proj.depth(*q.tile, *q.footprint)):
+        order = sorted(placements, key=lambda q: proj.depth(*q.tile, *q.footprint))
+        resolved = []
+        for p in order:
             sprite = self.lib.get(self.cat[p.type_id], p.level, p.direction, p.frame)
             ax, ay = proj.anchor(*p.tile, *p.footprint)
-            ox, oy = ax - sprite.anchor[0], ay - sprite.anchor[1]
+            resolved.append((p, sprite, ax - sprite.anchor[0], ay - sprite.anchor[1], ay))
 
+        # Shadows all go down first, so no building ends up under another's shadow.
+        # Deliberately not stamped into the id mask: a shadow is not the building,
+        # and including it would inflate every bounding box.
+        if self.shadows:
+            for _, sprite, ox, _, ay in resolved:
+                if sprite.shadow is None:
+                    continue
+                sy = ay - sprite.shadow.height + int(self.tile_w * SHADOW_LIFT)
+                canvas.alpha_composite(sprite.shadow, (ox + int(self.tile_w * SHADOW_DX), sy))
+
+        # Far to near: the painter's algorithm gives correct occlusion.
+        for p, sprite, ox, oy, _ in resolved:
             canvas.alpha_composite(sprite.image, (ox, oy))
             own, rect = self._stamp(ids, sprite.image, (ox, oy), p.instance_id, size)
             own_pixels[p.instance_id] = own
@@ -103,20 +123,33 @@ class Renderer:
     # ---- internals -------------------------------------------------------
 
     def _terrain(self, size: tuple[int, int], proj: Projection, rng: Random) -> Image.Image:
-        """Flat ground with deterministic mottling.
+        """Grass, built from several octaves of noise.
 
-        A perfectly uniform background is something a model can key off instead of
-        learning the buildings, so the ground gets low-frequency noise. Generated
-        small and upscaled bilinearly, which is both cheap and looks like terrain.
+        A flat colour is something a model keys off instead of learning buildings,
+        and a single noise octave still reads as static. Layering a coarse octave
+        (broad lighter and darker patches) under a fine one (blade-scale texture)
+        gives ground that varies at both scales, which is what real terrain does.
         """
         w, h = size
         gen = np.random.default_rng(rng.getrandbits(32))
-        coarse = gen.integers(128 - 16, 128 + 17, size=(max(2, h // 16), max(2, w // 16)), dtype=np.uint8)
-        smooth = Image.fromarray(coarse, mode="L").resize((w, h), Image.Resampling.BILINEAR)
-        offset = np.array(smooth, dtype=np.int16) - 128
 
-        base = np.array(self.background, dtype=np.int16)[None, None, :]
-        ground = np.clip(base + offset[:, :, None], 0, 255).astype(np.uint8)
+        field = np.zeros((h, w), dtype=np.float32)
+        weight = 0.0
+        for cells, amplitude in ((6, 1.0), (24, 0.5), (96, 0.26), (384, 0.13)):
+            coarse = gen.random((max(2, h * cells // max(w, h)), max(2, cells)), dtype=np.float32)
+            up = Image.fromarray((coarse * 255).astype(np.uint8), mode="L")
+            field += amplitude * np.asarray(
+                up.resize((w, h), Image.Resampling.BICUBIC), dtype=np.float32
+            )
+            weight += amplitude
+        field = field / (weight * 255.0)
+
+        # Blend between a shaded and a sunlit green rather than tinting one colour,
+        # so the darker patches shift hue slightly the way grass does.
+        dark = np.array((62, 104, 44), dtype=np.float32)
+        light = np.array((124, 166, 78), dtype=np.float32)
+        t = np.clip((field - 0.35) * 2.0, 0.0, 1.0)[:, :, None]
+        ground = (dark * (1.0 - t) + light * t).astype(np.uint8)
         return Image.fromarray(ground, mode="RGB").convert("RGBA")
 
     @staticmethod
