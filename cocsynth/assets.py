@@ -64,23 +64,29 @@ PLACEHOLDER_PREFIX = "placeholder:"
 
 
 #: Ground shadows: vertical squash, opacity, blur radius as a fraction of tile width.
-#: How much of its footprint diamond a building's art actually spans.
+#: How much of its footprint diamond a building's art spans by default.
 #:
-#: Not 1.0. Matching an icon's width to the full diamond assumes the art is the
-#: building's ground extent, and it is not -- an Army Camp icon is just the grill,
-#: while the 4x4 footprint is mostly the ground the troops stand on. Scale-swept
-#: colour matching against real screenshots puts the Town Hall at 0.61 of its
-#: diamond, the Cannon at 0.61, the Gold Storage at 0.72 and the Elixir Storage at
-#: 0.77. Correlations were weak (0.23-0.35), so this is one global figure rather
-#: than a per-type table pretending to a precision the measurement does not have.
-#: `scale` or `scales` in the manifest overrides it where a type is known better.
-ART_FILL = 0.68
+#: Near-full. Compared 1:1 against real screenshots at matched tile size, most
+#: buildings do cover their footprint -- a Cannon fills its 3x3, a Town Hall its
+#: 4x4. Earlier attempts to measure this per type by template matching gave three
+#: different answers for the same building depending on which statistic scored it
+#: (0.47, 0.22, 0.75), so those values are gone; a method that unstable is not a
+#: measurement. The exceptions are real but rare and need direct evidence, not a
+#: sweep: see army_camp in the manifest.
+#:
+#: The figure itself is measured, not judged. The Elixir Storage's sphere is
+#: distinctive enough to segment by colour in both a real screenshot and a render,
+#: and at matched tile size it comes to 1.64 tiles across in the game. Eyeballing
+#: the same comparison had me calling 0.94 "much too big" when it was 8% out, and
+#: 0.68 "about right" when it was 22% short -- which is roughly how much an eye is
+#: worth here.
+ART_FILL = 0.93
 
 SHADOW_SQUASH = 0.30
 #: Only the bottom of a sprite casts the contact shadow.
-SHADOW_BASE_BAND = 0.42
-SHADOW_ALPHA = 112
-SHADOW_BLUR = 0.055
+SHADOW_BASE_BAND = 0.34
+SHADOW_ALPHA = 78
+SHADOW_BLUR = 0.075
 
 
 @dataclass(frozen=True)
@@ -312,6 +318,11 @@ class SpriteLibrary:
             target *= float(per_file[filename])
         else:
             target *= float(entry.get("scale", ART_FILL))
+        # Deliberately not snapped to half a tile. Position is on the grid and
+        # always will be, but art size is not: at a 40px tile, snapping sends a
+        # 3x3's art between 2.5 and 3.0 tiles, a 20% jump -- larger than the error
+        # the snapping was meant to tidy up, and enough to swallow a measurement.
+
         if img.width == 0 or abs(img.width - target) < 1:
             return img, anchor
 

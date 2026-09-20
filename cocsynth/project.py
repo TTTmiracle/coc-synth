@@ -82,6 +82,27 @@ class Projection:
             self.tile_to_px(tx, ty + h),      # left (west)
         ]
 
+    def footprint_centre(self, tx: int, ty: int, w: int, h: int) -> tuple[int, int]:
+        """Middle of a footprint, in pixels -- where the building should stand."""
+        return self.tile_to_px(tx + w / 2, ty + h / 2)
+
+    def stand_point(self, tx: int, ty: int, w: int, h: int,
+                    art_w: float) -> tuple[int, int]:
+        """Where a sprite's ground point goes, for art of width `art_w` pixels.
+
+        Anchoring to the footprint's south vertex is only right when the art fills
+        the whole diamond. It does not: measured against real screenshots most
+        buildings draw at roughly two thirds of theirs. Bottom-anchoring art that
+        size hangs it off the front corner of its tiles -- for a 3x3 that is over a
+        tile-width low -- so the building reads as sitting on the wrong square.
+
+        A building stands in the middle of its footprint. Its art rests on a small
+        diamond of width `art_w` centred there, so the ground point is the centre
+        pushed down by that diamond's half-height.
+        """
+        cx, cy = self.footprint_centre(tx, ty, w, h)
+        return cx, int(round(cy + art_w * TILE_ASPECT / 2))
+
     def anchor(self, tx: int, ty: int, w: int, h: int) -> tuple[int, int]:
         """Where a sprite's anchor point must land: the footprint's bottom vertex.
 

@@ -110,7 +110,7 @@ class Renderer:
         resolved = []
         for p in order:
             sprite = self.lib.get(self.cat[p.type_id], p.level, p.direction, p.frame, p.connections)
-            ax, ay = proj.anchor(*p.tile, *p.footprint)
+            ax, ay = proj.stand_point(*p.tile, *p.footprint, sprite.image.width)
             resolved.append((p, sprite, ax - sprite.anchor[0], ay - sprite.anchor[1], ay))
 
         # Shadows all go down first, so no building ends up under another's shadow.
