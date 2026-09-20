@@ -33,10 +33,20 @@ ALPHA_CUTOFF = 8
 #: Shadow placement, as fractions of tile width. The game lights from the upper
 #: left, so shadows fall slightly down and to the right of what casts them.
 SHADOW_DX = 0.045
-#: Ground colours, sampled from an empty home village rather than chosen.
-GROUND_DARK = (119, 176, 46)
-GROUND_LIGHT = (150, 207, 71)
-GROUND_OUTSIDE = (91, 115, 38)
+#: Ground colours, sampled from real screenshots rather than chosen.
+#:
+#: From the *normal* view, not the layout editor. The editor brightens and
+#: saturates the buildable area to show you where you may build, so colouring the
+#: ground from it gives a board greener than the game a player actually looks at.
+#: The step between the two tile shades is ~15 levels of luminance, not the ~40 a
+#: light/dark quantile split suggests -- that split measures grass grain as much as
+#: the checkerboard. Blurring the grain out first and re-measuring gives 9 levels in
+#: the editor and 11-24 in normal play, against 38 for a board built on the quantile
+#: figure. An over-contrasted checkerboard is loud in exactly the way a real one is
+#: not.
+GROUND_DARK = (142, 167, 63)
+GROUND_LIGHT = (158, 183, 77)
+GROUND_OUTSIDE = (86, 108, 42)
 SHADOW_LIFT = 0.02
 
 
@@ -159,8 +169,8 @@ class Renderer:
         # Per-tile drift, so the board is not two flat colours, and pixel grain at
         # the amplitude measured inside a single real tile (about 10 per channel).
         tile_noise = (((ix * 73856093) ^ (iy * 19349663)) & 0x3FF) / 1023.0
-        ground += ((tile_noise.astype(np.float32) - 0.5) * 9.0)[:, :, None]
-        ground += (gen.random((h, w, 1), dtype=np.float32) - 0.5) * 17.0
+        ground += ((tile_noise.astype(np.float32) - 0.5) * 7.0)[:, :, None]
+        ground += (gen.random((h, w, 1), dtype=np.float32) - 0.5) * 12.0
         ground += (gen.random((h, w, 3), dtype=np.float32) - 0.5) * 7.0
 
         # --- edge of the buildable area ---------------------------------------

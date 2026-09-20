@@ -32,14 +32,14 @@ CONNECT_N, CONNECT_E, CONNECT_S, CONNECT_W = 1, 2, 4, 8
 TW = 256           # working tile width; stored art is rendered at this scale
 TH = round(TW * 0.75)   # the game's measured tile aspect, see project.TILE_ASPECT
 SS = 4             # supersample factor for clean diamond edges
-INSET = 0.085      # how far a free face pulls back from the tile edge, in tiles
+INSET = 0.205      # how far a free face pulls back from the tile edge, in tiles
 CAP_OVERHANG = 0.35  # the coping stone pulls back this much less than the body
 CAP_THICK = 0.075  # coping stone thickness, in tile widths
 
 #: Above-ground height per wall level, in tile widths. Clash walls grow with
 #: level but stay well under half a tile -- they are barriers, not towers.
-HEIGHTS = {1: 0.30, 2: 0.32, 3: 0.34, 4: 0.35, 5: 0.37,
-           6: 0.39, 7: 0.41, 8: 0.43, 9: 0.45, 10: 0.47}
+HEIGHTS = {1: 0.25, 2: 0.27, 3: 0.28, 4: 0.30, 5: 0.31,
+           6: 0.33, 7: 0.34, 8: 0.36, 9: 0.38, 10: 0.39}
 
 
 def sample_palette(path: Path) -> dict[str, tuple[int, int, int]]:
@@ -136,12 +136,31 @@ def build(mask: int, height: float, pal: dict) -> tuple[Image.Image, tuple[int, 
                    pt(bx1, by1, z_lo), pt(bx1, by0, z_lo)],
                   fill=shade(pal["right"], lit) + (255,), outline=outline + (255,), width=SS)
 
-    box(x0, x1, y0, y1, 0.0, body_h, 0.88)                    # body
-    box(c0, c1, r0, r1, body_h, height, 1.0)                  # coping stone
+    box(x0, x1, y0, y1, 0.0, body_h, 0.74)                    # body
+    box(c0, c1, r0, r1, body_h, height, 0.86)                 # coping stone
 
     top = [pt(c0, r0, height), pt(c1, r0, height),
            pt(c1, r1, height), pt(c0, r1, height)]
-    d.polygon(top, fill=pal["top"] + (255,), outline=outline + (255,), width=SS)
+    d.polygon(top, fill=shade(pal["top"], 0.80) + (255,),
+              outline=outline + (255,), width=SS)
+
+    # A stud on each segment. A Clash wall run is visibly made of blocks; a smooth
+    # unbroken bar is the one thing it never looks like.
+    sc, sz = 0.5, 0.15
+    if (c1 - c0) > sz * 2.2 and (r1 - r0) > sz * 2.2:
+        mx, my = (c0 + c1) / 2, (r0 + r1) / 2
+        s0x, s1x, s0y, s1y = mx - sz, mx + sz, my - sz, my + sz
+        top_z = height + CAP_THICK * 0.55
+        d.polygon([pt(s0x, s1y, top_z), pt(s1x, s1y, top_z),
+                   pt(s1x, s1y, height), pt(s0x, s1y, height)],
+                  fill=shade(pal["left"], 0.95) + (255,), outline=outline + (255,), width=SS)
+        d.polygon([pt(s1x, s0y, top_z), pt(s1x, s1y, top_z),
+                   pt(s1x, s1y, height), pt(s1x, s0y, height)],
+                  fill=shade(pal["right"], 0.95) + (255,), outline=outline + (255,), width=SS)
+        d.polygon([pt(s0x, s0y, top_z), pt(s1x, s0y, top_z),
+                   pt(s1x, s1y, top_z), pt(s0x, s1y, top_z)],
+                  fill=shade(pal["top"], 1.02) + (255,), outline=outline + (255,), width=SS)
+        _ = sc
 
     hi = shade(pal["top"], 1.20) + (255,)
     d.line([pt(c0, r1, height), pt(c1, r1, height)], fill=hi, width=SS)

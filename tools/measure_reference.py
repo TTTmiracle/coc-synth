@@ -238,6 +238,19 @@ class Scene:
         return np.fft.irfft2(fa * np.conj(fk), s=self.shape)
 
     def score(self, tmpl: list[np.ndarray], mask: np.ndarray) -> float:
+        """How far the best match stands out from a typical one, at this scale.
+
+        Raw peak correlation cannot be compared across scales: a smaller template
+        covers fewer pixels, so it fits noise more easily and its peak rises no
+        matter whether the scale is right. Sweeping on peak correlation therefore
+        always walks downhill to the smallest size tried -- which is how a 4x4 Town
+        Hall came out measured at two thirds of a tile.
+
+        Standardising the peak against the mean and spread of the *same*
+        correlation map removes that trend, because the easier fitting lifts every
+        position in the map, not just the correct one. What survives is how
+        distinctive the match is, which is what actually peaks at the right scale.
+        """
         th, tw = mask.shape
         H, W = self.shape
         if th >= H or tw >= W:
@@ -258,9 +271,14 @@ class Scene:
             s3 = self._inv(self.f_chan[i], np.fft.rfft2(t, s=self.shape))
             ncc = (s3 - s1 * (t_sum / n)) / np.sqrt(
                 np.maximum(s2 - s1 * s1 / n, 1e-9) * t_var)
-            ncc[H - th + 1:, :] = -1
-            ncc[:, W - tw + 1:] = -1
-            out.append(float(np.nanmax(ncc)))
+            valid = ncc[:H - th + 1, :W - tw + 1]
+            valid = valid[np.isfinite(valid)]
+            if valid.size < 100:
+                return -1.0
+            sd = valid.std()
+            if sd <= 1e-6:
+                return -1.0
+            out.append(float((valid.max() - valid.mean()) / sd))
         return float(np.mean(out))
 
 
