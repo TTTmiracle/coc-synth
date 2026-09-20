@@ -149,7 +149,7 @@ buildings:
   x_bow:
     display_name: X-Bow
     category: defense
-    footprint: [4, 4]
+    footprint: [3, 3]
     directions: 1
     per_th:
       9: { count: 2, max_level: 3 }

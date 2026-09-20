@@ -497,7 +497,7 @@ class Placer:
         # to the full 44 tiles, and a base that fills the whole map has no outside
         # -- no collectors in the grass, no space around it, nothing that reads as
         # a base sitting in a landscape.
-        need = int(math.ceil(math.sqrt(demand / 0.62))) + 1
+        need = int(math.ceil(math.sqrt(demand / 0.56))) + 1
         afford = (budget + 4) // 4
         side = max(6, min(need, afford, self.tiles - 2))
 

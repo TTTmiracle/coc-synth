@@ -267,8 +267,26 @@ class SpriteLibrary:
         the seam with its neighbour.
         """
         w, h = bdef.footprint
-        target = (w + h) * self.tile_w / 2
         entry = self.manifest.get(bdef.id, {})
+
+        height_tiles = entry.get("height_tiles")
+        if height_tiles:
+            # Fit by height instead, against a measured ratio.
+            #
+            # Width-fitting is only correct if a sprite's widest point is its
+            # footprint, and for published *icons* it is not -- each one is framed
+            # to fill its own canvas, so the ratio between building types is lost.
+            # Forcing every icon's width onto its diamond then leaves the heights
+            # anywhere: a 2x2 Hidden Tesla comes out taller than most 3x3s and
+            # nearly as tall as the 4x4 Town Hall. Nothing downstream can recover a
+            # proportion the art never carried, so it has to be supplied -- measured
+            # off a real screenshot, in tile widths, per type.
+            if img.height == 0:
+                return img, anchor
+            factor = (float(height_tiles) * self.tile_w) / img.height
+            return self._resize(img, anchor, factor)
+
+        target = (w + h) * self.tile_w / 2
         per_file = entry.get("scales", {})
         target *= float(per_file.get(filename, entry.get("scale", 1.0))
                         if filename else entry.get("scale", 1.0))
@@ -276,10 +294,16 @@ class SpriteLibrary:
             return img, anchor
 
         factor = target / img.width
+        return self._resize(img, anchor, factor)
+
+    @staticmethod
+    def _resize(img: Image.Image, anchor: tuple[int, int],
+                factor: float) -> tuple[Image.Image, tuple[int, int]]:
+        """Scale a sprite and carry its anchor with it."""
         size = (max(1, round(img.width * factor)), max(1, round(img.height * factor)))
         ax, ay = anchor
-        anchor = (round(ax * size[0] / img.width), round(ay * size[1] / img.height))
-        return img.resize(size, Image.Resampling.LANCZOS), anchor
+        moved = (round(ax * size[0] / img.width), round(ay * size[1] / img.height))
+        return img.resize(size, Image.Resampling.LANCZOS), moved
 
     def _lookup(self, type_id: str, level: int, direction: int, frame: int,
                 connections: int = 0) -> tuple[Path, bool] | None:
