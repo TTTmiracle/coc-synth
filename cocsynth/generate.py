@@ -74,7 +74,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--margin", type=int, default=24, help="padding around the grid, and pan range")
     p.add_argument("--layout", default="clustered", choices=("scatter", "clustered", "compartment"))
     p.add_argument("--count-mode", default="jitter", choices=("exact", "jitter"))
-    p.add_argument("--level-policy", default="clustered", choices=("maxed", "clustered", "uniform"))
+    p.add_argument("--level-policy", default="clustered", choices=("maxed", "clustered", "uniform", "fresh"))
     p.add_argument("--min-visibility", type=float, default=0.05,
                    help="drop instances occluded below this fraction")
     p.add_argument("--yolo-direction-mode", default="ignore", choices=("ignore", "split"),

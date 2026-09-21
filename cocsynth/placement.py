@@ -47,7 +47,7 @@ def wall_priority(bdef: BuildingDef) -> int:
         return 2
     return 1
 CountMode = str    # "exact" | "jitter"
-LevelPolicy = str  # "maxed" | "clustered" | "uniform"
+LevelPolicy = str  # "maxed" | "clustered" | "uniform" | "fresh"
 
 #: Fraction of a building's cap that `jitter` mode may drop to.
 JITTER_FLOOR = 0.70
@@ -216,6 +216,10 @@ class Placer:
     def _roll_level(self, bdef: BuildingDef, th: int, rng: Random) -> int:
         """Pick a level within this TH's cap."""
         cap = bdef.per_th[th].max_level
+        if self.level_policy == "fresh":
+            # Everything as first built. A real state of a real base, and the one
+            # the level 1 art measurements actually cover.
+            return 1
         if self.level_policy == "maxed" or cap == 1:
             return cap
         if self.level_policy == "uniform":
@@ -459,7 +463,9 @@ class Placer:
         # an upgrade has two adjacent levels at once, and the unfinished ones are
         # the inner runs, because the outer ring gets done first.
         cap = bdef.per_th[th].max_level
-        if self.level_policy == "maxed":
+        if self.level_policy == "fresh":
+            front, behind, share = 1, 1, 0.0
+        elif self.level_policy == "maxed":
             front, behind, share = cap, cap, 0.0
         else:
             front = max(1, cap - rng.choices((0, 1), weights=(7, 3))[0])
