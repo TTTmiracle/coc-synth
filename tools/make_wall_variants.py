@@ -32,14 +32,21 @@ CONNECT_N, CONNECT_E, CONNECT_S, CONNECT_W = 1, 2, 4, 8
 TW = 256           # working tile width; stored art is rendered at this scale
 TH = round(TW * 0.75)   # the game's measured tile aspect, see project.TILE_ASPECT
 SS = 4             # supersample factor for clean diamond edges
-INSET = 0.205      # how far a free face pulls back from the tile edge, in tiles
-CAP_OVERHANG = 0.35  # the coping stone pulls back this much less than the body
+INSET = 0.290      # how far the BODY's free face pulls back from the tile edge
+#
+# Measured, not chosen. In reference/th1_spread.jpg a two-segment run spans 0.98
+# tiles and a 2x2 block spans 1.48; a run of n segments spans (n-1)/2 + w and a
+# block spans 1 + w, so both give an art width w of 0.48 tiles, hence an inset of
+# (1 - 0.48) / 2. The same two shapes give a height above ground of 0.34 and 0.33
+# tiles independently. Two arrangements agreeing is what makes it a measurement
+# rather than a reading.
+CAP_OVERHANG = 0.03  # how far the coping stone oversails the body, in tiles
 CAP_THICK = 0.075  # coping stone thickness, in tile widths
 
-#: Above-ground height per wall level, in tile widths. Clash walls grow with
-#: level but stay well under half a tile -- they are barriers, not towers.
-HEIGHTS = {1: 0.25, 2: 0.27, 3: 0.28, 4: 0.30, 5: 0.31,
-           6: 0.33, 7: 0.34, 8: 0.36, 9: 0.38, 10: 0.39}
+#: Above-ground height per wall level, in tile widths. Level 1 is measured at
+#: 0.33 (see INSET); the rest are stepped up from it and remain unmeasured.
+HEIGHTS = {1: 0.33, 2: 0.35, 3: 0.37, 4: 0.39, 5: 0.41,
+           6: 0.43, 7: 0.45, 8: 0.47, 9: 0.49, 10: 0.51}
 
 
 def sample_palette(path: Path) -> dict[str, tuple[int, int, int]]:
@@ -94,10 +101,11 @@ def build(mask: int, height: float, pal: dict) -> tuple[Image.Image, tuple[int, 
     # gives a Clash wall its silhouette -- without it a run is a plain kerb -- but
     # it can only overhang on a free face, because a connected face has to stay
     # flush with the tile edge or the seam with the neighbour opens up.
-    c0 = 0.0 if mask & CONNECT_W else INSET * CAP_OVERHANG
-    c1 = 1.0 if mask & CONNECT_E else 1.0 - INSET * CAP_OVERHANG
-    r0 = 0.0 if mask & CONNECT_N else INSET * CAP_OVERHANG
-    r1 = 1.0 if mask & CONNECT_S else 1.0 - INSET * CAP_OVERHANG
+    cap_in = max(0.0, INSET - CAP_OVERHANG)
+    c0 = 0.0 if mask & CONNECT_W else cap_in
+    c1 = 1.0 if mask & CONNECT_E else 1.0 - cap_in
+    r0 = 0.0 if mask & CONNECT_N else cap_in
+    r1 = 1.0 if mask & CONNECT_S else 1.0 - cap_in
     body_h = height - CAP_THICK
     tw, th = TW * SS, TH * SS
 

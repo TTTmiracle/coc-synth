@@ -114,6 +114,9 @@
           82,
           224
         ]
+      },
+      "scales": {
+        "archer_tower_lvl01.png": 0.573
       }
     },
     "army_camp": {
@@ -328,6 +331,9 @@
           100,
           242
         ]
+      },
+      "scales": {
+        "clan_castle_lvl01.png": 0.94
       }
     },
     "dark_barracks": {
@@ -484,6 +490,9 @@
           83,
           198
         ]
+      },
+      "scales": {
+        "elixir_collector_lvl01.png": 0.573
       }
     },
     "elixir_storage": {
@@ -903,807 +912,807 @@
           90
         ],
         "wall_lvl01_c0.png": [
-          113,
-          244
+          64,
+          229
         ],
         "wall_lvl01_c1.png": [
-          113,
-          251
+          64,
+          254
         ],
         "wall_lvl01_c2.png": [
-          113,
-          244
+          64,
+          229
         ],
         "wall_lvl01_c3.png": [
-          113,
-          251
+          64,
+          254
         ],
         "wall_lvl01_c4.png": [
-          122,
-          244
+          98,
+          229
         ],
         "wall_lvl01_c5.png": [
-          122,
-          251
+          98,
+          254
         ],
         "wall_lvl01_c6.png": [
-          122,
-          244
+          98,
+          229
         ],
         "wall_lvl01_c7.png": [
-          122,
-          251
+          98,
+          254
         ],
         "wall_lvl01_c8.png": [
-          122,
-          251
+          98,
+          254
         ],
         "wall_lvl01_c9.png": [
-          122,
-          258
+          98,
+          278
         ],
         "wall_lvl01_c10.png": [
-          122,
-          251
+          98,
+          254
         ],
         "wall_lvl01_c11.png": [
-          122,
-          258
+          98,
+          278
         ],
         "wall_lvl01_c12.png": [
           131,
-          251
+          254
         ],
         "wall_lvl01_c13.png": [
           131,
-          258
+          278
         ],
         "wall_lvl01_c14.png": [
           131,
-          251
+          254
         ],
         "wall_lvl01_c15.png": [
           131,
-          258
+          278
         ],
         "wall_lvl02_c0.png": [
-          113,
-          249
+          64,
+          234
         ],
         "wall_lvl02_c1.png": [
-          113,
-          257
+          64,
+          259
         ],
         "wall_lvl02_c2.png": [
-          113,
-          249
+          64,
+          234
         ],
         "wall_lvl02_c3.png": [
-          113,
-          257
+          64,
+          259
         ],
         "wall_lvl02_c4.png": [
-          122,
-          249
+          98,
+          234
         ],
         "wall_lvl02_c5.png": [
-          122,
-          257
+          98,
+          259
         ],
         "wall_lvl02_c6.png": [
-          122,
-          249
+          98,
+          234
         ],
         "wall_lvl02_c7.png": [
-          122,
-          257
+          98,
+          259
         ],
         "wall_lvl02_c8.png": [
-          122,
-          257
+          98,
+          259
         ],
         "wall_lvl02_c9.png": [
-          122,
-          263
+          98,
+          284
         ],
         "wall_lvl02_c10.png": [
-          122,
-          257
+          98,
+          259
         ],
         "wall_lvl02_c11.png": [
-          122,
-          263
+          98,
+          284
         ],
         "wall_lvl02_c12.png": [
           131,
-          257
+          259
         ],
         "wall_lvl02_c13.png": [
           131,
-          263
+          284
         ],
         "wall_lvl02_c14.png": [
           131,
-          257
+          259
         ],
         "wall_lvl02_c15.png": [
           131,
-          263
+          284
         ],
         "wall_lvl03_c0.png": [
-          113,
-          252
+          64,
+          239
         ],
         "wall_lvl03_c1.png": [
-          113,
-          259
+          64,
+          264
         ],
         "wall_lvl03_c2.png": [
-          113,
-          252
+          64,
+          239
         ],
         "wall_lvl03_c3.png": [
-          113,
-          259
+          64,
+          264
         ],
         "wall_lvl03_c4.png": [
-          122,
-          252
+          98,
+          239
         ],
         "wall_lvl03_c5.png": [
-          122,
-          259
+          98,
+          264
         ],
         "wall_lvl03_c6.png": [
-          122,
-          252
+          98,
+          239
         ],
         "wall_lvl03_c7.png": [
-          122,
-          259
+          98,
+          264
         ],
         "wall_lvl03_c8.png": [
-          122,
-          259
+          98,
+          264
         ],
         "wall_lvl03_c9.png": [
-          122,
-          266
+          98,
+          289
         ],
         "wall_lvl03_c10.png": [
-          122,
-          259
+          98,
+          264
         ],
         "wall_lvl03_c11.png": [
-          122,
-          266
+          98,
+          289
         ],
         "wall_lvl03_c12.png": [
           131,
-          259
+          264
         ],
         "wall_lvl03_c13.png": [
           131,
-          266
+          289
         ],
         "wall_lvl03_c14.png": [
           131,
-          259
+          264
         ],
         "wall_lvl03_c15.png": [
           131,
-          266
+          289
         ],
         "wall_lvl04_c0.png": [
-          113,
-          257
+          64,
+          244
         ],
         "wall_lvl04_c1.png": [
-          113,
-          264
+          64,
+          269
         ],
         "wall_lvl04_c2.png": [
-          113,
-          257
+          64,
+          244
         ],
         "wall_lvl04_c3.png": [
-          113,
-          264
+          64,
+          269
         ],
         "wall_lvl04_c4.png": [
-          122,
-          257
+          98,
+          244
         ],
         "wall_lvl04_c5.png": [
-          122,
-          264
+          98,
+          269
         ],
         "wall_lvl04_c6.png": [
-          122,
-          257
+          98,
+          244
         ],
         "wall_lvl04_c7.png": [
-          122,
-          264
+          98,
+          269
         ],
         "wall_lvl04_c8.png": [
-          122,
-          264
+          98,
+          269
         ],
         "wall_lvl04_c9.png": [
-          122,
-          271
+          98,
+          294
         ],
         "wall_lvl04_c10.png": [
-          122,
-          264
+          98,
+          269
         ],
         "wall_lvl04_c11.png": [
-          122,
-          271
+          98,
+          294
         ],
         "wall_lvl04_c12.png": [
           131,
-          264
+          269
         ],
         "wall_lvl04_c13.png": [
           131,
-          271
+          294
         ],
         "wall_lvl04_c14.png": [
           131,
-          264
+          269
         ],
         "wall_lvl04_c15.png": [
           131,
-          271
+          294
         ],
         "wall_lvl05_c0.png": [
-          113,
-          260
+          64,
+          249
         ],
         "wall_lvl05_c1.png": [
-          113,
-          266
+          64,
+          274
         ],
         "wall_lvl05_c2.png": [
-          113,
-          260
+          64,
+          249
         ],
         "wall_lvl05_c3.png": [
-          113,
-          266
+          64,
+          274
         ],
         "wall_lvl05_c4.png": [
-          122,
-          260
+          98,
+          249
         ],
         "wall_lvl05_c5.png": [
-          122,
-          266
+          98,
+          274
         ],
         "wall_lvl05_c6.png": [
-          122,
-          260
+          98,
+          249
         ],
         "wall_lvl05_c7.png": [
-          122,
-          266
+          98,
+          274
         ],
         "wall_lvl05_c8.png": [
-          122,
-          266
+          98,
+          274
         ],
         "wall_lvl05_c9.png": [
-          122,
-          273
+          98,
+          299
         ],
         "wall_lvl05_c10.png": [
-          122,
-          266
+          98,
+          274
         ],
         "wall_lvl05_c11.png": [
-          122,
-          273
+          98,
+          299
         ],
         "wall_lvl05_c12.png": [
           131,
-          266
+          274
         ],
         "wall_lvl05_c13.png": [
           131,
-          273
+          299
         ],
         "wall_lvl05_c14.png": [
           131,
-          266
+          274
         ],
         "wall_lvl05_c15.png": [
           131,
-          273
+          299
         ],
         "wall_lvl06_c0.png": [
-          113,
-          265
+          64,
+          254
         ],
         "wall_lvl06_c1.png": [
-          113,
-          272
+          64,
+          279
         ],
         "wall_lvl06_c2.png": [
-          113,
-          265
+          64,
+          254
         ],
         "wall_lvl06_c3.png": [
-          113,
-          272
+          64,
+          279
         ],
         "wall_lvl06_c4.png": [
-          122,
-          265
+          98,
+          254
         ],
         "wall_lvl06_c5.png": [
-          122,
-          272
+          98,
+          279
         ],
         "wall_lvl06_c6.png": [
-          122,
-          265
+          98,
+          254
         ],
         "wall_lvl06_c7.png": [
-          122,
-          272
+          98,
+          279
         ],
         "wall_lvl06_c8.png": [
-          122,
-          272
+          98,
+          279
         ],
         "wall_lvl06_c9.png": [
-          122,
-          278
+          98,
+          304
         ],
         "wall_lvl06_c10.png": [
-          122,
-          272
+          98,
+          279
         ],
         "wall_lvl06_c11.png": [
-          122,
-          278
+          98,
+          304
         ],
         "wall_lvl06_c12.png": [
           131,
-          272
+          279
         ],
         "wall_lvl06_c13.png": [
           131,
-          278
+          304
         ],
         "wall_lvl06_c14.png": [
           131,
-          272
+          279
         ],
         "wall_lvl06_c15.png": [
           131,
-          278
+          304
         ],
         "wall_lvl07_c0.png": [
-          113,
-          267
+          64,
+          259
         ],
         "wall_lvl07_c1.png": [
-          113,
-          274
+          64,
+          284
         ],
         "wall_lvl07_c2.png": [
-          113,
-          267
+          64,
+          259
         ],
         "wall_lvl07_c3.png": [
-          113,
-          274
+          64,
+          284
         ],
         "wall_lvl07_c4.png": [
-          122,
-          267
+          98,
+          259
         ],
         "wall_lvl07_c5.png": [
-          122,
-          274
+          98,
+          284
         ],
         "wall_lvl07_c6.png": [
-          122,
-          267
+          98,
+          259
         ],
         "wall_lvl07_c7.png": [
-          122,
-          274
+          98,
+          284
         ],
         "wall_lvl07_c8.png": [
-          122,
-          274
+          98,
+          284
         ],
         "wall_lvl07_c9.png": [
-          122,
-          281
+          98,
+          309
         ],
         "wall_lvl07_c10.png": [
-          122,
-          274
+          98,
+          284
         ],
         "wall_lvl07_c11.png": [
-          122,
-          281
+          98,
+          309
         ],
         "wall_lvl07_c12.png": [
           131,
-          274
+          284
         ],
         "wall_lvl07_c13.png": [
           131,
-          281
+          309
         ],
         "wall_lvl07_c14.png": [
           131,
-          274
+          284
         ],
         "wall_lvl07_c15.png": [
           131,
-          281
+          309
         ],
         "wall_lvl08_c0.png": [
-          113,
-          272
+          64,
+          264
         ],
         "wall_lvl08_c1.png": [
-          113,
-          279
+          64,
+          289
         ],
         "wall_lvl08_c2.png": [
-          113,
-          272
+          64,
+          264
         ],
         "wall_lvl08_c3.png": [
-          113,
-          279
+          64,
+          289
         ],
         "wall_lvl08_c4.png": [
-          122,
-          272
+          98,
+          264
         ],
         "wall_lvl08_c5.png": [
-          122,
-          279
+          98,
+          289
         ],
         "wall_lvl08_c6.png": [
-          122,
-          272
+          98,
+          264
         ],
         "wall_lvl08_c7.png": [
-          122,
-          279
+          98,
+          289
         ],
         "wall_lvl08_c8.png": [
-          122,
-          279
+          98,
+          289
         ],
         "wall_lvl08_c9.png": [
-          122,
-          286
+          98,
+          314
         ],
         "wall_lvl08_c10.png": [
-          122,
-          279
+          98,
+          289
         ],
         "wall_lvl08_c11.png": [
-          122,
-          286
+          98,
+          314
         ],
         "wall_lvl08_c12.png": [
           131,
-          279
+          289
         ],
         "wall_lvl08_c13.png": [
           131,
-          286
+          314
         ],
         "wall_lvl08_c14.png": [
           131,
-          279
+          289
         ],
         "wall_lvl08_c15.png": [
           131,
-          286
+          314
         ],
         "wall_lvl09_c0.png": [
-          113,
-          278
+          64,
+          270
         ],
         "wall_lvl09_c1.png": [
-          113,
-          284
+          64,
+          294
         ],
         "wall_lvl09_c2.png": [
-          113,
-          278
+          64,
+          270
         ],
         "wall_lvl09_c3.png": [
-          113,
-          284
+          64,
+          294
         ],
         "wall_lvl09_c4.png": [
-          122,
-          278
+          98,
+          270
         ],
         "wall_lvl09_c5.png": [
-          122,
-          284
+          98,
+          294
         ],
         "wall_lvl09_c6.png": [
-          122,
-          278
+          98,
+          270
         ],
         "wall_lvl09_c7.png": [
-          122,
-          284
+          98,
+          294
         ],
         "wall_lvl09_c8.png": [
-          122,
-          284
+          98,
+          294
         ],
         "wall_lvl09_c9.png": [
-          122,
-          291
+          98,
+          319
         ],
         "wall_lvl09_c10.png": [
-          122,
-          284
+          98,
+          294
         ],
         "wall_lvl09_c11.png": [
-          122,
-          291
+          98,
+          319
         ],
         "wall_lvl09_c12.png": [
           131,
-          284
+          294
         ],
         "wall_lvl09_c13.png": [
           131,
-          291
+          319
         ],
         "wall_lvl09_c14.png": [
           131,
-          284
+          294
         ],
         "wall_lvl09_c15.png": [
           131,
-          291
+          319
         ],
         "wall_lvl10_c0.png": [
-          113,
-          280
+          64,
+          275
         ],
         "wall_lvl10_c1.png": [
-          113,
-          287
+          64,
+          300
         ],
         "wall_lvl10_c2.png": [
-          113,
-          280
+          64,
+          275
         ],
         "wall_lvl10_c3.png": [
-          113,
-          287
+          64,
+          300
         ],
         "wall_lvl10_c4.png": [
-          122,
-          280
+          98,
+          275
         ],
         "wall_lvl10_c5.png": [
-          122,
-          287
+          98,
+          300
         ],
         "wall_lvl10_c6.png": [
-          122,
-          280
+          98,
+          275
         ],
         "wall_lvl10_c7.png": [
-          122,
-          287
+          98,
+          300
         ],
         "wall_lvl10_c8.png": [
-          122,
-          287
+          98,
+          300
         ],
         "wall_lvl10_c9.png": [
-          122,
-          294
+          98,
+          325
         ],
         "wall_lvl10_c10.png": [
-          122,
-          287
+          98,
+          300
         ],
         "wall_lvl10_c11.png": [
-          122,
-          294
+          98,
+          325
         ],
         "wall_lvl10_c12.png": [
           131,
-          287
+          300
         ],
         "wall_lvl10_c13.png": [
           131,
-          294
+          325
         ],
         "wall_lvl10_c14.png": [
           131,
-          287
+          300
         ],
         "wall_lvl10_c15.png": [
           131,
-          294
+          325
         ]
       },
       "scale": 1.0,
       "scales": {
-        "wall_lvl01_c0.png": 0.87891,
-        "wall_lvl01_c1.png": 0.91406,
-        "wall_lvl01_c2.png": 0.91406,
-        "wall_lvl01_c3.png": 0.94922,
-        "wall_lvl01_c4.png": 0.91406,
-        "wall_lvl01_c5.png": 0.94922,
-        "wall_lvl01_c6.png": 0.94922,
-        "wall_lvl01_c7.png": 0.98438,
-        "wall_lvl01_c8.png": 0.91406,
-        "wall_lvl01_c9.png": 0.94922,
-        "wall_lvl01_c10.png": 0.94922,
-        "wall_lvl01_c11.png": 0.98438,
-        "wall_lvl01_c12.png": 0.94922,
-        "wall_lvl01_c13.png": 0.98438,
-        "wall_lvl01_c14.png": 0.98438,
+        "wall_lvl01_c0.png": 0.5,
+        "wall_lvl01_c1.png": 0.63281,
+        "wall_lvl01_c2.png": 0.63281,
+        "wall_lvl01_c3.png": 0.76172,
+        "wall_lvl01_c4.png": 0.63281,
+        "wall_lvl01_c5.png": 0.76172,
+        "wall_lvl01_c6.png": 0.76172,
+        "wall_lvl01_c7.png": 0.89062,
+        "wall_lvl01_c8.png": 0.63281,
+        "wall_lvl01_c9.png": 0.76172,
+        "wall_lvl01_c10.png": 0.76172,
+        "wall_lvl01_c11.png": 0.89062,
+        "wall_lvl01_c12.png": 0.76172,
+        "wall_lvl01_c13.png": 0.89062,
+        "wall_lvl01_c14.png": 0.89062,
         "wall_lvl01_c15.png": 1.02344,
-        "wall_lvl02_c0.png": 0.87891,
-        "wall_lvl02_c1.png": 0.91406,
-        "wall_lvl02_c2.png": 0.91406,
-        "wall_lvl02_c3.png": 0.94922,
-        "wall_lvl02_c4.png": 0.91406,
-        "wall_lvl02_c5.png": 0.94922,
-        "wall_lvl02_c6.png": 0.94922,
-        "wall_lvl02_c7.png": 0.98438,
-        "wall_lvl02_c8.png": 0.91406,
-        "wall_lvl02_c9.png": 0.94922,
-        "wall_lvl02_c10.png": 0.94922,
-        "wall_lvl02_c11.png": 0.98438,
-        "wall_lvl02_c12.png": 0.94922,
-        "wall_lvl02_c13.png": 0.98438,
-        "wall_lvl02_c14.png": 0.98438,
+        "wall_lvl02_c0.png": 0.5,
+        "wall_lvl02_c1.png": 0.63281,
+        "wall_lvl02_c2.png": 0.63281,
+        "wall_lvl02_c3.png": 0.76172,
+        "wall_lvl02_c4.png": 0.63281,
+        "wall_lvl02_c5.png": 0.76172,
+        "wall_lvl02_c6.png": 0.76172,
+        "wall_lvl02_c7.png": 0.89062,
+        "wall_lvl02_c8.png": 0.63281,
+        "wall_lvl02_c9.png": 0.76172,
+        "wall_lvl02_c10.png": 0.76172,
+        "wall_lvl02_c11.png": 0.89062,
+        "wall_lvl02_c12.png": 0.76172,
+        "wall_lvl02_c13.png": 0.89062,
+        "wall_lvl02_c14.png": 0.89062,
         "wall_lvl02_c15.png": 1.02344,
-        "wall_lvl03_c0.png": 0.87891,
-        "wall_lvl03_c1.png": 0.91406,
-        "wall_lvl03_c2.png": 0.91406,
-        "wall_lvl03_c3.png": 0.94922,
-        "wall_lvl03_c4.png": 0.91406,
-        "wall_lvl03_c5.png": 0.94922,
-        "wall_lvl03_c6.png": 0.94922,
-        "wall_lvl03_c7.png": 0.98438,
-        "wall_lvl03_c8.png": 0.91406,
-        "wall_lvl03_c9.png": 0.94922,
-        "wall_lvl03_c10.png": 0.94922,
-        "wall_lvl03_c11.png": 0.98438,
-        "wall_lvl03_c12.png": 0.94922,
-        "wall_lvl03_c13.png": 0.98438,
-        "wall_lvl03_c14.png": 0.98438,
+        "wall_lvl03_c0.png": 0.5,
+        "wall_lvl03_c1.png": 0.63281,
+        "wall_lvl03_c2.png": 0.63281,
+        "wall_lvl03_c3.png": 0.76172,
+        "wall_lvl03_c4.png": 0.63281,
+        "wall_lvl03_c5.png": 0.76172,
+        "wall_lvl03_c6.png": 0.76172,
+        "wall_lvl03_c7.png": 0.89062,
+        "wall_lvl03_c8.png": 0.63281,
+        "wall_lvl03_c9.png": 0.76172,
+        "wall_lvl03_c10.png": 0.76172,
+        "wall_lvl03_c11.png": 0.89062,
+        "wall_lvl03_c12.png": 0.76172,
+        "wall_lvl03_c13.png": 0.89062,
+        "wall_lvl03_c14.png": 0.89062,
         "wall_lvl03_c15.png": 1.02344,
-        "wall_lvl04_c0.png": 0.87891,
-        "wall_lvl04_c1.png": 0.91406,
-        "wall_lvl04_c2.png": 0.91406,
-        "wall_lvl04_c3.png": 0.94922,
-        "wall_lvl04_c4.png": 0.91406,
-        "wall_lvl04_c5.png": 0.94922,
-        "wall_lvl04_c6.png": 0.94922,
-        "wall_lvl04_c7.png": 0.98438,
-        "wall_lvl04_c8.png": 0.91406,
-        "wall_lvl04_c9.png": 0.94922,
-        "wall_lvl04_c10.png": 0.94922,
-        "wall_lvl04_c11.png": 0.98438,
-        "wall_lvl04_c12.png": 0.94922,
-        "wall_lvl04_c13.png": 0.98438,
-        "wall_lvl04_c14.png": 0.98438,
+        "wall_lvl04_c0.png": 0.5,
+        "wall_lvl04_c1.png": 0.63281,
+        "wall_lvl04_c2.png": 0.63281,
+        "wall_lvl04_c3.png": 0.76172,
+        "wall_lvl04_c4.png": 0.63281,
+        "wall_lvl04_c5.png": 0.76172,
+        "wall_lvl04_c6.png": 0.76172,
+        "wall_lvl04_c7.png": 0.89062,
+        "wall_lvl04_c8.png": 0.63281,
+        "wall_lvl04_c9.png": 0.76172,
+        "wall_lvl04_c10.png": 0.76172,
+        "wall_lvl04_c11.png": 0.89062,
+        "wall_lvl04_c12.png": 0.76172,
+        "wall_lvl04_c13.png": 0.89062,
+        "wall_lvl04_c14.png": 0.89062,
         "wall_lvl04_c15.png": 1.02344,
-        "wall_lvl05_c0.png": 0.87891,
-        "wall_lvl05_c1.png": 0.91406,
-        "wall_lvl05_c2.png": 0.91406,
-        "wall_lvl05_c3.png": 0.94922,
-        "wall_lvl05_c4.png": 0.91406,
-        "wall_lvl05_c5.png": 0.94922,
-        "wall_lvl05_c6.png": 0.94922,
-        "wall_lvl05_c7.png": 0.98438,
-        "wall_lvl05_c8.png": 0.91406,
-        "wall_lvl05_c9.png": 0.94922,
-        "wall_lvl05_c10.png": 0.94922,
-        "wall_lvl05_c11.png": 0.98438,
-        "wall_lvl05_c12.png": 0.94922,
-        "wall_lvl05_c13.png": 0.98438,
-        "wall_lvl05_c14.png": 0.98438,
+        "wall_lvl05_c0.png": 0.5,
+        "wall_lvl05_c1.png": 0.63281,
+        "wall_lvl05_c2.png": 0.63281,
+        "wall_lvl05_c3.png": 0.76172,
+        "wall_lvl05_c4.png": 0.63281,
+        "wall_lvl05_c5.png": 0.76172,
+        "wall_lvl05_c6.png": 0.76172,
+        "wall_lvl05_c7.png": 0.89062,
+        "wall_lvl05_c8.png": 0.63281,
+        "wall_lvl05_c9.png": 0.76172,
+        "wall_lvl05_c10.png": 0.76172,
+        "wall_lvl05_c11.png": 0.89062,
+        "wall_lvl05_c12.png": 0.76172,
+        "wall_lvl05_c13.png": 0.89062,
+        "wall_lvl05_c14.png": 0.89062,
         "wall_lvl05_c15.png": 1.02344,
-        "wall_lvl06_c0.png": 0.87891,
-        "wall_lvl06_c1.png": 0.91406,
-        "wall_lvl06_c2.png": 0.91406,
-        "wall_lvl06_c3.png": 0.94922,
-        "wall_lvl06_c4.png": 0.91406,
-        "wall_lvl06_c5.png": 0.94922,
-        "wall_lvl06_c6.png": 0.94922,
-        "wall_lvl06_c7.png": 0.98438,
-        "wall_lvl06_c8.png": 0.91406,
-        "wall_lvl06_c9.png": 0.94922,
-        "wall_lvl06_c10.png": 0.94922,
-        "wall_lvl06_c11.png": 0.98438,
-        "wall_lvl06_c12.png": 0.94922,
-        "wall_lvl06_c13.png": 0.98438,
-        "wall_lvl06_c14.png": 0.98438,
+        "wall_lvl06_c0.png": 0.5,
+        "wall_lvl06_c1.png": 0.63281,
+        "wall_lvl06_c2.png": 0.63281,
+        "wall_lvl06_c3.png": 0.76172,
+        "wall_lvl06_c4.png": 0.63281,
+        "wall_lvl06_c5.png": 0.76172,
+        "wall_lvl06_c6.png": 0.76172,
+        "wall_lvl06_c7.png": 0.89062,
+        "wall_lvl06_c8.png": 0.63281,
+        "wall_lvl06_c9.png": 0.76172,
+        "wall_lvl06_c10.png": 0.76172,
+        "wall_lvl06_c11.png": 0.89062,
+        "wall_lvl06_c12.png": 0.76172,
+        "wall_lvl06_c13.png": 0.89062,
+        "wall_lvl06_c14.png": 0.89062,
         "wall_lvl06_c15.png": 1.02344,
-        "wall_lvl07_c0.png": 0.87891,
-        "wall_lvl07_c1.png": 0.91406,
-        "wall_lvl07_c2.png": 0.91406,
-        "wall_lvl07_c3.png": 0.94922,
-        "wall_lvl07_c4.png": 0.91406,
-        "wall_lvl07_c5.png": 0.94922,
-        "wall_lvl07_c6.png": 0.94922,
-        "wall_lvl07_c7.png": 0.98438,
-        "wall_lvl07_c8.png": 0.91406,
-        "wall_lvl07_c9.png": 0.94922,
-        "wall_lvl07_c10.png": 0.94922,
-        "wall_lvl07_c11.png": 0.98438,
-        "wall_lvl07_c12.png": 0.94922,
-        "wall_lvl07_c13.png": 0.98438,
-        "wall_lvl07_c14.png": 0.98438,
+        "wall_lvl07_c0.png": 0.5,
+        "wall_lvl07_c1.png": 0.63281,
+        "wall_lvl07_c2.png": 0.63281,
+        "wall_lvl07_c3.png": 0.76172,
+        "wall_lvl07_c4.png": 0.63281,
+        "wall_lvl07_c5.png": 0.76172,
+        "wall_lvl07_c6.png": 0.76172,
+        "wall_lvl07_c7.png": 0.89062,
+        "wall_lvl07_c8.png": 0.63281,
+        "wall_lvl07_c9.png": 0.76172,
+        "wall_lvl07_c10.png": 0.76172,
+        "wall_lvl07_c11.png": 0.89062,
+        "wall_lvl07_c12.png": 0.76172,
+        "wall_lvl07_c13.png": 0.89062,
+        "wall_lvl07_c14.png": 0.89062,
         "wall_lvl07_c15.png": 1.02344,
-        "wall_lvl08_c0.png": 0.87891,
-        "wall_lvl08_c1.png": 0.91406,
-        "wall_lvl08_c2.png": 0.91406,
-        "wall_lvl08_c3.png": 0.94922,
-        "wall_lvl08_c4.png": 0.91406,
-        "wall_lvl08_c5.png": 0.94922,
-        "wall_lvl08_c6.png": 0.94922,
-        "wall_lvl08_c7.png": 0.98438,
-        "wall_lvl08_c8.png": 0.91406,
-        "wall_lvl08_c9.png": 0.94922,
-        "wall_lvl08_c10.png": 0.94922,
-        "wall_lvl08_c11.png": 0.98438,
-        "wall_lvl08_c12.png": 0.94922,
-        "wall_lvl08_c13.png": 0.98438,
-        "wall_lvl08_c14.png": 0.98438,
+        "wall_lvl08_c0.png": 0.5,
+        "wall_lvl08_c1.png": 0.63281,
+        "wall_lvl08_c2.png": 0.63281,
+        "wall_lvl08_c3.png": 0.76172,
+        "wall_lvl08_c4.png": 0.63281,
+        "wall_lvl08_c5.png": 0.76172,
+        "wall_lvl08_c6.png": 0.76172,
+        "wall_lvl08_c7.png": 0.89062,
+        "wall_lvl08_c8.png": 0.63281,
+        "wall_lvl08_c9.png": 0.76172,
+        "wall_lvl08_c10.png": 0.76172,
+        "wall_lvl08_c11.png": 0.89062,
+        "wall_lvl08_c12.png": 0.76172,
+        "wall_lvl08_c13.png": 0.89062,
+        "wall_lvl08_c14.png": 0.89062,
         "wall_lvl08_c15.png": 1.02344,
-        "wall_lvl09_c0.png": 0.87891,
-        "wall_lvl09_c1.png": 0.91406,
-        "wall_lvl09_c2.png": 0.91406,
-        "wall_lvl09_c3.png": 0.94922,
-        "wall_lvl09_c4.png": 0.91406,
-        "wall_lvl09_c5.png": 0.94922,
-        "wall_lvl09_c6.png": 0.94922,
-        "wall_lvl09_c7.png": 0.98438,
-        "wall_lvl09_c8.png": 0.91406,
-        "wall_lvl09_c9.png": 0.94922,
-        "wall_lvl09_c10.png": 0.94922,
-        "wall_lvl09_c11.png": 0.98438,
-        "wall_lvl09_c12.png": 0.94922,
-        "wall_lvl09_c13.png": 0.98438,
-        "wall_lvl09_c14.png": 0.98438,
+        "wall_lvl09_c0.png": 0.5,
+        "wall_lvl09_c1.png": 0.63281,
+        "wall_lvl09_c2.png": 0.63281,
+        "wall_lvl09_c3.png": 0.76172,
+        "wall_lvl09_c4.png": 0.63281,
+        "wall_lvl09_c5.png": 0.76172,
+        "wall_lvl09_c6.png": 0.76172,
+        "wall_lvl09_c7.png": 0.89062,
+        "wall_lvl09_c8.png": 0.63281,
+        "wall_lvl09_c9.png": 0.76172,
+        "wall_lvl09_c10.png": 0.76172,
+        "wall_lvl09_c11.png": 0.89062,
+        "wall_lvl09_c12.png": 0.76172,
+        "wall_lvl09_c13.png": 0.89062,
+        "wall_lvl09_c14.png": 0.89062,
         "wall_lvl09_c15.png": 1.02344,
-        "wall_lvl10_c0.png": 0.87891,
-        "wall_lvl10_c1.png": 0.91406,
-        "wall_lvl10_c2.png": 0.91406,
-        "wall_lvl10_c3.png": 0.94922,
-        "wall_lvl10_c4.png": 0.91406,
-        "wall_lvl10_c5.png": 0.94922,
-        "wall_lvl10_c6.png": 0.94922,
-        "wall_lvl10_c7.png": 0.98438,
-        "wall_lvl10_c8.png": 0.91406,
-        "wall_lvl10_c9.png": 0.94922,
-        "wall_lvl10_c10.png": 0.94922,
-        "wall_lvl10_c11.png": 0.98438,
-        "wall_lvl10_c12.png": 0.94922,
-        "wall_lvl10_c13.png": 0.98438,
-        "wall_lvl10_c14.png": 0.98438,
+        "wall_lvl10_c0.png": 0.5,
+        "wall_lvl10_c1.png": 0.63281,
+        "wall_lvl10_c2.png": 0.63281,
+        "wall_lvl10_c3.png": 0.76172,
+        "wall_lvl10_c4.png": 0.63281,
+        "wall_lvl10_c5.png": 0.76172,
+        "wall_lvl10_c6.png": 0.76172,
+        "wall_lvl10_c7.png": 0.89062,
+        "wall_lvl10_c8.png": 0.63281,
+        "wall_lvl10_c9.png": 0.76172,
+        "wall_lvl10_c10.png": 0.76172,
+        "wall_lvl10_c11.png": 0.89062,
+        "wall_lvl10_c12.png": 0.76172,
+        "wall_lvl10_c13.png": 0.89062,
+        "wall_lvl10_c14.png": 0.89062,
         "wall_lvl10_c15.png": 1.02344
       }
     },
