@@ -113,6 +113,20 @@ class Renderer:
             ax, ay = proj.stand_point(*p.tile, *p.footprint, sprite.image.width)
             resolved.append((p, sprite, ax - sprite.anchor[0], ay - sprite.anchor[1], ay))
 
+        # Ground patches first: they lie flat on the terrain, under everything.
+        # The Army Camp is the case that matters -- its art is only the campfire,
+        # but the building is the whole 4x4 of trampled darker grass around it,
+        # which is what a player sees and what a detector should be asked to find.
+        # Stamped into the id mask so the label covers the patch, not the fire.
+        patches: dict[int, tuple[int, int, int, int]] = {}
+        for p, sprite, _, _, _ in resolved:
+            frac = self.lib.manifest.get(p.type_id, {}).get("ground_patch")
+            if not frac:
+                continue
+            poly = proj.footprint_polygon(*p.tile, *p.footprint)
+            patches[p.instance_id] = self._ground_patch(
+                canvas, ids, poly, p.instance_id, float(frac), rng)
+
         # Shadows all go down first, so no building ends up under another's shadow.
         # Deliberately not stamped into the id mask: a shadow is not the building,
         # and including it would inflate every bounding box.
@@ -127,6 +141,15 @@ class Renderer:
         for p, sprite, ox, oy, _ in resolved:
             canvas.alpha_composite(sprite.image, (ox, oy))
             own, rect = self._stamp(ids, sprite.image, (ox, oy), p.instance_id, size)
+            patch = patches.get(p.instance_id)
+            if patch is not None:
+                px0, py0, px1, py1 = patch
+                own += max(0, (px1 - px0) * (py1 - py0))
+                if rect == (0, 0, 0, 0):
+                    rect = patch
+                else:
+                    rect = (min(rect[0], px0), min(rect[1], py0),
+                            max(rect[2], px1), max(rect[3], py1))
             own_pixels[p.instance_id] = own
             rects[p.instance_id] = rect
             meta[p.instance_id] = (sprite.name, proj.footprint_polygon(*p.tile, *p.footprint))
@@ -217,6 +240,39 @@ class Renderer:
                 lean = rng.uniform(-0.6, 0.6)
                 d.line([(x, y), (x + lean * blade, y - blade * rng.uniform(0.6, 1.1))],
                        fill=c, width=1)
+
+    def _ground_patch(self, canvas: Image.Image, ids: np.ndarray,
+                      poly: list[tuple[int, int]], iid: int, darken: float,
+                      rng: Random) -> tuple[int, int, int, int]:
+        """Darken the footprint diamond and claim it for this instance.
+
+        Measured off a real camp: the trampled ground runs about 10% darker than
+        the grass beside it, with the same grain. Drawing it costs nothing and it
+        is the only reason an Army Camp reads as a 4x4 rather than a small fire
+        sitting on empty tiles.
+        """
+        xs = [q[0] for q in poly]
+        ys = [q[1] for q in poly]
+        x0, y0 = max(0, min(xs)), max(0, min(ys))
+        x1, y1 = min(canvas.width, max(xs)), min(canvas.height, max(ys))
+        if x0 >= x1 or y0 >= y1:
+            return (0, 0, 0, 0)
+
+        shape = Image.new("L", (canvas.width, canvas.height), 0)
+        ImageDraw.Draw(shape).polygon(poly, fill=255)
+        sel = np.asarray(shape)[y0:y1, x0:x1] > 127
+        if not sel.any():
+            return (0, 0, 0, 0)
+
+        region = np.asarray(canvas.crop((x0, y0, x1, y1)).convert("RGB")).astype(np.float32)
+        grain = np.random.default_rng(rng.getrandbits(32)).random(
+            region.shape[:2], dtype=np.float32)[:, :, None]
+        shaded = region * (darken + (grain - 0.5) * 0.06)
+        region[sel] = np.clip(shaded[sel], 0, 255)
+        patch = Image.fromarray(region.astype(np.uint8), mode="RGB").convert("RGBA")
+        canvas.paste(patch, (x0, y0))
+        ids[y0:y1, x0:x1][sel] = iid
+        return (x0, y0, x1, y1)
 
     @staticmethod
     def _stamp(

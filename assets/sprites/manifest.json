@@ -147,7 +147,11 @@
           128
         ]
       },
-      "scale": 0.45
+      "scale": 0.45,
+      "scales": {
+        "army_camp_lvl01.png": 0.38
+      },
+      "ground_patch": 0.9
     },
     "barracks": {
       "anchors": {
@@ -195,6 +199,9 @@
           98,
           184
         ]
+      },
+      "scales": {
+        "barracks_lvl01.png": 0.69
       }
     },
     "blacksmith": {
@@ -243,6 +250,9 @@
           50,
           127
         ]
+      },
+      "scales": {
+        "builders_hut_lvl01.png": 0.59
       }
     },
     "cannon": {
@@ -291,6 +301,9 @@
           90,
           144
         ]
+      },
+      "scales": {
+        "cannon_lvl01.png": 0.51
       }
     },
     "clan_castle": {
@@ -519,6 +532,9 @@
           108,
           225
         ]
+      },
+      "scales": {
+        "elixir_storage_lvl01.png": 0.41
       }
     },
     "giant_bomb": {
@@ -632,7 +648,10 @@
           229
         ]
       },
-      "scale": 1.1
+      "scale": 1.1,
+      "scales": {
+        "gold_storage_lvl01.png": 0.68
+      }
     },
     "hero_hall": {
       "anchors": {
@@ -836,6 +855,9 @@
           409,
           915
         ]
+      },
+      "scales": {
+        "town_hall_lvl01.png": 0.84
       }
     },
     "wall": {
@@ -1734,7 +1756,9 @@
       }
     },
     "_notes": {
-      "scale": "Fraction of the footprint diamond width the art spans. Default is assets.ART_FILL; a type only gets an entry where there is direct evidence. elixir_storage validates the default (its magenta sphere measures 1.64 tiles in game and 1.65 rendered). gold_storage measured ~20% small against a level-matched TH7 screenshot. army_camp: its art is the grill alone, while the 4x4 footprint is the ground its troops stand on. The other 30 types are on the default because nothing reliable was available to measure them with."
+      "scale": "Fraction of the footprint diamond width the art spans. Default is assets.ART_FILL; a type only gets an entry where there is direct evidence. elixir_storage validates the default (its magenta sphere measures 1.64 tiles in game and 1.65 rendered). gold_storage measured ~20% small against a level-matched TH7 screenshot. army_camp: its art is the grill alone, while the 4x4 footprint is the ground its troops stand on. The other 30 types are on the default because nothing reliable was available to measure them with.",
+      "scales": "Per-file art width, as a fraction of the footprint diamond. Finer than per-type because the framing differs level to level: a level 1 Elixir Storage measures 0.41 of its footprint while the maxed one measures 0.93. These level 1 values are measured off reference/th1_spread.jpg, where every building is level 1 and spaced clear of its neighbours, at tile_w 58.17.",
+      "ground_patch": "Fraction to darken the footprint diamond by, for buildings whose extent is ground rather than object. The Army Camp's art is only the campfire; the 4x4 it occupies is trampled darker grass, measured at about 0.89-0.93 of the grass beside it. The patch is stamped into the instance mask, so the label covers the camp rather than the fire."
     }
   }
 }
