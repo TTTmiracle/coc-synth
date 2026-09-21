@@ -116,8 +116,9 @@
         ]
       },
       "scales": {
-        "archer_tower_lvl01.png": 0.573
-      }
+        "archer_tower_lvl01.png": 0.5157
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "army_camp": {
       "anchors": {
@@ -152,9 +153,10 @@
       },
       "scale": 0.45,
       "scales": {
-        "army_camp_lvl01.png": 0.38
+        "army_camp_lvl01.png": 0.3825
       },
-      "ground_patch": 0.9
+      "ground_patch": 0.9,
+      "cut_from": "reference/th1_spread.jpg"
     },
     "barracks": {
       "anchors": {
@@ -204,8 +206,9 @@
         ]
       },
       "scales": {
-        "barracks_lvl01.png": 0.69
-      }
+        "barracks_lvl01.png": 0.5902
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "blacksmith": {
       "anchors": {
@@ -255,8 +258,9 @@
         ]
       },
       "scales": {
-        "builders_hut_lvl01.png": 0.59
-      }
+        "builders_hut_lvl01.png": 0.5673
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "cannon": {
       "anchors": {
@@ -306,8 +310,9 @@
         ]
       },
       "scales": {
-        "cannon_lvl01.png": 0.51
-      }
+        "cannon_lvl01.png": 0.2751
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "clan_castle": {
       "anchors": {
@@ -333,8 +338,9 @@
         ]
       },
       "scales": {
-        "clan_castle_lvl01.png": 0.94
-      }
+        "clan_castle_lvl01.png": 0.8366
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "dark_barracks": {
       "anchors": {
@@ -543,8 +549,9 @@
         ]
       },
       "scales": {
-        "elixir_storage_lvl01.png": 0.41
-      }
+        "elixir_storage_lvl01.png": 0.2292
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "giant_bomb": {
       "anchors": {
@@ -659,8 +666,9 @@
       },
       "scale": 1.1,
       "scales": {
-        "gold_storage_lvl01.png": 0.68
-      }
+        "gold_storage_lvl01.png": 0.6361
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "hero_hall": {
       "anchors": {
@@ -866,8 +874,9 @@
         ]
       },
       "scales": {
-        "town_hall_lvl01.png": 0.84
-      }
+        "town_hall_lvl01.png": 0.7994
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "wall": {
       "anchors": {
