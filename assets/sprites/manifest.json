@@ -153,7 +153,7 @@
       },
       "scale": 0.45,
       "scales": {
-        "army_camp_lvl01.png": 0.3825
+        "army_camp_lvl01.png": 0.3309
       },
       "ground_patch": 0.9,
       "cut_from": "reference/th1_spread.jpg"
@@ -921,68 +921,68 @@
           90
         ],
         "wall_lvl01_c0.png": [
-          64,
-          229
+          15,
+          42
         ],
         "wall_lvl01_c1.png": [
-          64,
-          254
+          15,
+          46
         ],
         "wall_lvl01_c2.png": [
-          64,
-          229
+          15,
+          42
         ],
         "wall_lvl01_c3.png": [
-          64,
-          254
+          15,
+          42
         ],
         "wall_lvl01_c4.png": [
-          98,
-          229
+          15,
+          46
         ],
         "wall_lvl01_c5.png": [
-          98,
-          254
+          15,
+          46
         ],
         "wall_lvl01_c6.png": [
-          98,
-          229
+          15,
+          42
         ],
         "wall_lvl01_c7.png": [
-          98,
-          254
+          15,
+          46
         ],
         "wall_lvl01_c8.png": [
-          98,
-          254
+          15,
+          42
         ],
         "wall_lvl01_c9.png": [
-          98,
-          278
+          15,
+          42
         ],
         "wall_lvl01_c10.png": [
-          98,
-          254
+          15,
+          42
         ],
         "wall_lvl01_c11.png": [
-          98,
-          278
+          15,
+          42
         ],
         "wall_lvl01_c12.png": [
-          131,
-          254
+          15,
+          42
         ],
         "wall_lvl01_c13.png": [
-          131,
-          278
+          15,
+          46
         ],
         "wall_lvl01_c14.png": [
-          131,
-          254
+          15,
+          42
         ],
         "wall_lvl01_c15.png": [
-          131,
-          278
+          15,
+          42
         ],
         "wall_lvl02_c0.png": [
           64,
@@ -1563,22 +1563,22 @@
       },
       "scale": 1.0,
       "scales": {
-        "wall_lvl01_c0.png": 0.5,
-        "wall_lvl01_c1.png": 0.63281,
-        "wall_lvl01_c2.png": 0.63281,
-        "wall_lvl01_c3.png": 0.76172,
-        "wall_lvl01_c4.png": 0.63281,
-        "wall_lvl01_c5.png": 0.76172,
-        "wall_lvl01_c6.png": 0.76172,
-        "wall_lvl01_c7.png": 0.89062,
-        "wall_lvl01_c8.png": 0.63281,
-        "wall_lvl01_c9.png": 0.76172,
-        "wall_lvl01_c10.png": 0.76172,
-        "wall_lvl01_c11.png": 0.89062,
-        "wall_lvl01_c12.png": 0.76172,
-        "wall_lvl01_c13.png": 0.89062,
-        "wall_lvl01_c14.png": 0.89062,
-        "wall_lvl01_c15.png": 1.02344,
+        "wall_lvl01_c0.png": 0.5329,
+        "wall_lvl01_c1.png": 0.5157,
+        "wall_lvl01_c2.png": 0.5329,
+        "wall_lvl01_c3.png": 0.5329,
+        "wall_lvl01_c4.png": 0.5157,
+        "wall_lvl01_c5.png": 0.5157,
+        "wall_lvl01_c6.png": 0.5329,
+        "wall_lvl01_c7.png": 0.5157,
+        "wall_lvl01_c8.png": 0.5329,
+        "wall_lvl01_c9.png": 0.5329,
+        "wall_lvl01_c10.png": 0.5329,
+        "wall_lvl01_c11.png": 0.5329,
+        "wall_lvl01_c12.png": 0.5329,
+        "wall_lvl01_c13.png": 0.5157,
+        "wall_lvl01_c14.png": 0.5329,
+        "wall_lvl01_c15.png": 0.5329,
         "wall_lvl02_c0.png": 0.5,
         "wall_lvl02_c1.png": 0.63281,
         "wall_lvl02_c2.png": 0.63281,
@@ -1723,7 +1723,8 @@
         "wall_lvl10_c13.png": 0.89062,
         "wall_lvl10_c14.png": 0.89062,
         "wall_lvl10_c15.png": 1.02344
-      }
+      },
+      "cut_from": "reference/th1_spread.jpg"
     },
     "wizard_tower": {
       "anchors": {

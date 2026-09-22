@@ -1,0 +1,16 @@
+{
+  "_comment": "Crop boxes picked by eye off reference/th1_spread.jpg, not by segmentation. Boxes exclude villagers and UI markers, which no colour test separates reliably.",
+  "screenshot": "reference/th1_spread.jpg",
+  "tile_w": 58.17,
+  "buildings": {
+    "town_hall":      {"box": [1067, 189, 194, 157], "level": 1, "footprint": [4, 4]},
+    "builders_hut":   {"box": [1290, 334,  69,  82], "level": 1, "footprint": [2, 2]},
+    "barracks":       {"box": [ 760, 441, 121, 119], "level": 1, "footprint": [3, 3]},
+    "cannon":         {"box": [ 624, 626,  53,  47], "level": 1, "footprint": [3, 3]},
+    "elixir_storage": {"box": [1327, 626,  65,  60], "level": 1, "footprint": [3, 3]},
+    "archer_tower":   {"box": [ 774, 694,  99, 124], "level": 1, "footprint": [3, 3]},
+    "gold_storage":   {"box": [1112, 739, 119,  89], "level": 1, "footprint": [3, 3]},
+    "clan_castle":    {"box": [ 917, 821, 154, 145], "level": 1, "footprint": [3, 3]},
+    "army_camp":      {"box": [ 966, 384,  74,  60], "level": 1, "footprint": [4, 4]}
+  }
+}
