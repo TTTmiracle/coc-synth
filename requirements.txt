@@ -1,0 +1,9 @@
+Pillow
+numpy
+pydantic
+PyYAML
+pytest
+
+# Optional -- only for tools/ingest_sprites.py --cutout (background removal
+# when pulling in new sprites). Everything else runs without it.
+# rembg

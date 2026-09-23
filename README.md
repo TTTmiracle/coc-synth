@@ -32,6 +32,8 @@ which is which.
 ## Quickstart
 
 ```bash
+pip install -r requirements.txt
+
 python -m cocsynth.generate --th 9 --n 500 --out data/th9 --seed 42 --formats json,yolo
 python -m cocsynth.generate --th 1-9 --n 5000 --out data/mixed --seed 1
 python -m cocsynth.generate --th 9 --n 4 --out data/debug --overlay   # eyeball the labels
