@@ -5,3 +5,6 @@ __pycache__/
 config/_gamedata_cache/
 models/
 *.pt
+runs/
+.claude/
+*.log
