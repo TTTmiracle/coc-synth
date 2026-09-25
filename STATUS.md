@@ -1,5 +1,11 @@
 # Where this is up to
 
+## Background
+
+Earlier hand-made attempts at this (around 15 September 2026) were not
+preserved. This repository starts from the current generator, and its commit
+history begins on 20 September 2026.
+
 ## What works
 
 The generator places buildings under real game rules and renders them with the
